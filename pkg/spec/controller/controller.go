@@ -22,7 +22,7 @@ func AddToScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func AddControllerToManager(manager ctrl.Manager, consumer consumer.Consumer, env helper.EnvironmentManager) error {
+func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, env helper.EnvironmentManager) error {
 	
 	workerPool, err := workers.AddWorkerPool(ctrl.Log.WithName("workers-pool"), env.SpecWorkPoolSize, manager)
 	if err != nil {

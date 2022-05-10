@@ -3,9 +3,9 @@ package helper
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -20,8 +20,8 @@ func CreateNamespaceIfNotExist(ctx context.Context, k8sClient client.Client, nam
 		ObjectMeta: metav1.ObjectMeta{ Name: namespace },
 	}
 
-	if err := k8sClient.Create(ctx, namespaceObj); err != nil && !strings.HasSuffix(err.Error(), "already exists") {
-		return fmt.Errorf("failed to create namespace - %w", err)
+	if err := k8sClient.Create(ctx, namespaceObj); err != nil && !apiErrors.IsAlreadyExists(err) {
+		return fmt.Errorf("failed to create namespace %s - %w", namespace, err)
 	}
 
 	return nil

@@ -12,5 +12,6 @@ type Consumer interface {
 	// of type GenericBundle, and are handled by the GenericBundleSyncer.
 	Register(msgID string, customBundleRegistration *bundle.CustomBundleRegistration)
 
+	// provide the generic bundle for message producer
 	GetGenericBundleChan() chan *bundle.GenericBundle
 }

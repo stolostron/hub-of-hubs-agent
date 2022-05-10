@@ -1,21 +1,35 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/go-logr/logr"
+	clustersV1 "github.com/open-cluster-management/api/cluster/v1"
+	policiesV1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/spf13/pflag"
+	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
+	v1 "k8s.io/api/core/v1"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiRuntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	clustersV1beta1 "open-cluster-management.io/api/cluster/v1beta1"
+	placementRulesV1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
+	appsV1alpha1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/scheme"
 
-	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
+	specController "github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
 	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
@@ -59,23 +73,30 @@ func doMain() int {
 
 	consumer, err := getConsumer(environmentManager, genericBundleChan)
 	if err != nil {
-		log.Error(err, "transport initialization error")
+		log.Error(err, "transport consumer initialization error")
 		return 1
 	}
-
-	mgr, err := createManager(consumer, environmentManager)
+	producer, err := getProducer(environmentManager)
 	if err != nil {
-		log.Error(err, "Failed to create manager")
-		return 1
+		log.Error(err, "transport producer initialization error")
 	}
 
 	consumer.Start()
+	producer.Start()
 	defer consumer.Stop()
+	defer producer.Stop()
 
-	log.Info("Starting the Cmd.")
+
+	mgr, err := createManager(consumer, producer, environmentManager)
+	if err != nil {
+		log.Error(err, "failed to create manager")
+		return 1
+	}
+
+	log.Info("starting the Cmd.")
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		log.Error(err, "Manager exited non-zero")
+		log.Error(err, "manager exited non-zero")
 		return 1
 	}
 
@@ -131,7 +152,7 @@ func getProducer(environmentManager *helper.EnvironmentManager) (producer.Produc
 	}
 }
 
-func createManager(consumer consumer.Consumer, environmentManager *helper.EnvironmentManager) (ctrl.Manager, error) {
+func createManager(consumer consumer.Consumer, producer producer.Producer, environmentManager *helper.EnvironmentManager) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", METRICS_HOST, METRICS_PORT),
 		LeaderElection:          true,
@@ -144,13 +165,110 @@ func createManager(consumer consumer.Consumer, environmentManager *helper.Enviro
 		return nil, fmt.Errorf("failed to create a new manager: %w", err)
 	}
 
-	if err := controller.AddToScheme(mgr.GetScheme()); err != nil {
-		return nil, fmt.Errorf("failed to add schemes: %w", err)
+	// add scheme
+	if err := addToScheme(mgr.GetScheme()); err != nil {
+		return nil, fmt.Errorf("failed to add a schemes: %w", err)
 	}
 
-	if err := controller.AddControllerToManager(mgr, consumer, *environmentManager); err != nil {
+	// incarnation version
+	incarnation, err := getIncarnation(mgr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get incarnation version: %w", err)
+	}
+	fmt.Printf("Starting the Cmd incarnation: %d", incarnation)
+
+	if err := specController.AddSyncersToManager(mgr, consumer, *environmentManager); err != nil {
 		return nil, fmt.Errorf("failed to add spec syncer: %w", err)
 	}
 
 	return mgr, nil
+}
+
+func addToScheme(runtimeScheme *apiRuntime.Scheme) error {
+	// add cluster scheme
+	if err := clustersV1.Install(runtimeScheme); err != nil {
+		return fmt.Errorf("failed to add scheme: %w", err)
+	}
+
+	if err := clustersV1beta1.Install(runtimeScheme); err != nil {
+		return fmt.Errorf("failed to add scheme: %w", err)
+	}
+
+	schemeBuilders := []*scheme.Builder{
+		policiesV1.SchemeBuilder, configV1.SchemeBuilder, placementRulesV1.SchemeBuilder, appsV1alpha1.SchemeBuilder,
+	} // add schemes
+
+	for _, schemeBuilder := range schemeBuilders {
+		if err := schemeBuilder.AddToScheme(runtimeScheme); err != nil {
+			return fmt.Errorf("failed to add scheme: %w", err)
+		}
+	}
+
+	return nil
+}
+
+
+// Incarnation is a part of the version of all the messages this process will transport.
+// The motivation behind this logic is allowing the message receivers/consumers to infer that messages transmitted
+// from this instance are more recent than all other existing ones, regardless of their instance-specific generations.
+func getIncarnation(mgr ctrl.Manager) (uint64, error) {
+	k8sClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: mgr.GetScheme()})
+	if err != nil {
+		return 0, fmt.Errorf("failed to start k8s client - %w", err)
+	}
+
+	ctx := context.Background()
+	configMap := &v1.ConfigMap{}
+
+	// create hoh-local ns if missing
+	if err := helper.CreateNamespaceIfNotExist(ctx, k8sClient, HOH_LOCAL_NAMESPACE); err != nil {
+		return 0, fmt.Errorf("failed to create ns - %w", err)
+	}
+
+	// try to get ConfigMap
+	objKey := client.ObjectKey{
+		Namespace: HOH_LOCAL_NAMESPACE,
+		Name:      INCARNATION_CONFIG_MAP_KEY,
+	}
+	if err := k8sClient.Get(ctx, objKey, configMap); err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return 0, fmt.Errorf("failed to get incarnation config-map - %w", err)
+		}
+
+		// incarnation ConfigMap does not exist, create it with incarnation = 0
+		configMap = createIncarnationConfigMap(0)
+		if err := k8sClient.Create(ctx, configMap); err != nil {
+			return 0, fmt.Errorf("failed to create incarnation config-map obj - %w", err)
+		}
+
+		return 0, nil
+	}
+
+	// incarnation configMap exists, get incarnation, increment it and update object
+	incarnationString, exists := configMap.Data[INCARNATION_CONFIG_MAP_KEY]
+	if !exists {
+		return 0, fmt.Errorf("configmap %s does not contain (%s)", INCARNATION_CONFIG_MAP_KEY, INCARNATION_CONFIG_MAP_KEY)
+	}
+
+	lastIncarnation, err := strconv.ParseUint(incarnationString, BASE10, UINT64_SIZE)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse value of key %s in configmap %s - %w", INCARNATION_CONFIG_MAP_KEY,
+			INCARNATION_CONFIG_MAP_KEY, err)
+	}
+
+	newConfigMap := createIncarnationConfigMap(lastIncarnation + 1)
+	if err := k8sClient.Patch(ctx, newConfigMap, client.MergeFrom(configMap)); err != nil {
+		return 0, fmt.Errorf("failed to update incarnation version - %w", err)
+	}
+	return lastIncarnation + 1, nil
+}
+
+func createIncarnationConfigMap(incarnation uint64) *v1.ConfigMap {
+	return &v1.ConfigMap{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: HOH_LOCAL_NAMESPACE,
+			Name:      INCARNATION_CONFIG_MAP_KEY,
+		},
+		Data: map[string]string{INCARNATION_CONFIG_MAP_KEY: strconv.FormatUint(incarnation, BASE10)},
+	}
 }

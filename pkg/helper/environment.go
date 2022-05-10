@@ -37,6 +37,8 @@ const (
 	SYNC_SERVICE_PRODUCER_HOST = "SYNC_SERVICE_PRODUCER_HOST"                       // todo update to comsumer
 	SYNC_SERVICE_PRODUCER_PORT = "SYNC_SERVICE_PRODUCER_PORT"                       // todo update to comsumer
 
+	COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR = "COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR"
+
 	// envVarKafkaProducerID       = "KAFKA_PRODUCER_ID"
 	// envVarKafkaBootstrapServers = "KAFKA_BOOTSTRAP_SERVERS"
 	// envVarKafkaTopic            = "KAFKA_TOPIC"
@@ -73,6 +75,7 @@ type EnvironmentManager struct {
 	TransportCompressionType string
 	SpecWorkPoolSize int
 	SpecEnforceHohRbac bool
+	StatusDeltaCountSwitchFactor int
 	Kafka         KafkaEnvironment
 	SyncService SyncServiceEnvironment
 }
@@ -190,8 +193,17 @@ func NewEnvironmentManager() (*EnvironmentManager, error) {
 		return nil, fmt.Errorf("not found environment variable: %q", KAFKA_MESSAGE_SIZE_LIMIT_KB)
 	}
 	kafkaValidMessageSizeLimit, err := strconv.Atoi(kafkaMessageSizeLimit)
-	if err != nil || syncServiceValidConsumerPort < 0 {
+	if err != nil || kafkaValidMessageSizeLimit < 0 {
 		return nil, fmt.Errorf("environment variable %q is not valid", KAFKA_MESSAGE_SIZE_LIMIT_KB)
+	}
+
+	statusCountSwitchFactor, exit := os.LookupEnv(COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR)
+	if !exit {
+		return nil, fmt.Errorf("not found environment variable: %q", COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR)
+	}
+	statusValidCountSwitchFactor, err := strconv.Atoi(statusCountSwitchFactor)
+	if err != nil || statusValidCountSwitchFactor < 0 {
+		return nil, fmt.Errorf("environment variable %q is not valid", COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR)
 	}
 
 	environmentManager := &EnvironmentManager{
@@ -201,6 +213,7 @@ func NewEnvironmentManager() (*EnvironmentManager, error) {
 		TransportCompressionType: transportMessageCompressionType,
 		SpecWorkPoolSize: k8sValidWorkPoolSize,
 		SpecEnforceHohRbac: enforceHohRbac,
+		StatusDeltaCountSwitchFactor: statusValidCountSwitchFactor,
 		Kafka: KafkaEnvironment{
 			BootstrapServers: kafkaBootstrapServers,
 			SslCa:            kafkaSslBase64EncodedCertificate,

@@ -146,7 +146,7 @@ func (s *SyncService) syncGenericBundle(payload []byte) error {
 
 // SyncCustomBundle writes a custom bundle to its respective syncer channel.
 func (c *SyncService) SyncCustomBundle(customBundleRegistration *bundle.CustomBundleRegistration, payload []byte) error {
-	receivedBundle := customBundleRegistration.CreateBundleFunc()
+	receivedBundle := customBundleRegistration.InitBundlesResourceFunc()
 	if err := json.Unmarshal(payload, &receivedBundle); err != nil {
 		return fmt.Errorf("failed to parse custom bundle - %w", err)
 	}

@@ -3,6 +3,7 @@ package syncers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -44,26 +45,26 @@ type managedClusterLabelsBundleSyncer struct {
 func AddManagedClusterLabelsBundleSyncer(log logr.Logger, mgr ctrl.Manager, consumer consumer.Consumer,
 	workerPool *workers.WorkerPool,
 ) error {
-	bundleUpdatesChan := make(chan interface{})
+	customBundleUpdatesChan := make(chan interface{})
 
 	if err := mgr.Add(&managedClusterLabelsBundleSyncer{
 		log:                          log,
-		bundleUpdatesChan:            bundleUpdatesChan,
+		bundleUpdatesChan:            customBundleUpdatesChan,
 		latestBundle:                 nil,
 		managedClusterToTimestampMap: make(map[string]*time.Time),
 		workerPool:                   workerPool,
 		bundleProcessingWaitingGroup: sync.WaitGroup{},
 		latestBundleLock:             sync.Mutex{},
 	}); err != nil {
-		close(bundleUpdatesChan)
+		close(customBundleUpdatesChan)
 		return fmt.Errorf("failed to add managed cluster labels bundles syncer - %w", err)
 	}
 
 	consumer.Register(datatypes.ManagedClustersLabelsMsgKey, &bundle.CustomBundleRegistration{
-		CreateBundleFunc: func() interface{} {
+		InitBundlesResourceFunc: func() interface{} {
 			return &spec.ManagedClusterLabelsSpecBundle{}
 		},
-		BundleUpdatesChan: bundleUpdatesChan,
+		BundleUpdatesChan: customBundleUpdatesChan,
 	})
 
 	return nil
@@ -143,10 +144,16 @@ func (syncer *managedClusterLabelsBundleSyncer) handleBundle() {
 func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labelsSpec *spec.ManagedClusterLabelsSpec,
 	lastProcessedTimestampPtr *time.Time,
 ) {
+
 	syncer.workerPool.Submit(workers.NewJob(labelsSpec, func(ctx context.Context,
 		k8sClient client.Client, obj interface{},
 	) {
 		defer syncer.bundleProcessingWaitingGroup.Done()
+
+		labelsSpec, ok := obj.(*spec.ManagedClusterLabelsSpec)
+		if !ok {
+			syncer.log.Error(errors.New("job obj is not a ManagedClusterLabelsSpec type"), "invald obj type")
+		}
 
 		managedCluster := &clusterv1.ManagedCluster{}
 		if err := k8sClient.Get(ctx, client.ObjectKey{
