@@ -10,17 +10,16 @@ import (
 
 	"github.com/go-logr/logr"
 	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
+	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	"github.com/stolostron/hub-of-hubs-data-types/bundle/spec"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
-	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 )
 
 const (
@@ -144,7 +143,6 @@ func (syncer *managedClusterLabelsBundleSyncer) handleBundle() {
 func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labelsSpec *spec.ManagedClusterLabelsSpec,
 	lastProcessedTimestampPtr *time.Time,
 ) {
-
 	syncer.workerPool.Submit(workers.NewJob(labelsSpec, func(ctx context.Context,
 		k8sClient client.Client, obj interface{},
 	) {

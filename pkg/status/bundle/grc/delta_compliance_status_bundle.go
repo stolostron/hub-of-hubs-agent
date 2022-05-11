@@ -6,8 +6,8 @@ import (
 
 	set "github.com/deckarep/golang-set"
 	policyv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 )
 
 const unknownComplianceStatus = "unknown"
@@ -17,7 +17,8 @@ var errPolicyStatusUnchanged = errors.New("policy status did not changed")
 // NewDeltaComplianceStatusBundle creates a new instance of DeltaComplianceStatusBundle.
 func NewDeltaComplianceStatusBundle(leafHubName string, baseBundle bundlepkg.Bundle,
 	clustersPerPolicyBundle *ClustersPerPolicyBundle, incarnation uint64,
-	extractObjIDFunc bundlepkg.ExtractObjIDFunc) bundlepkg.DeltaStateBundle {
+	extractObjIDFunc bundlepkg.ExtractObjIDFunc,
+) bundlepkg.DeltaStateBundle {
 	return &DeltaComplianceStatusBundle{
 		BaseDeltaComplianceStatusBundle: statusbundle.BaseDeltaComplianceStatusBundle{
 			Objects:           make([]*statusbundle.PolicyGenericComplianceStatus, 0),
@@ -198,7 +199,8 @@ func (bundle *DeltaComplianceStatusBundle) getObjectIndexByUID(uid string) (int,
 
 // getPolicyComplianceStatus gets compliance statuses of a new policy object (relative to this bundle).
 func (bundle *DeltaComplianceStatusBundle) getPolicyComplianceStatus(originPolicyID string,
-	policy *policyv1.Policy) (*statusbundle.PolicyGenericComplianceStatus, error) {
+	policy *policyv1.Policy,
+) (*statusbundle.PolicyGenericComplianceStatus, error) {
 	compliantClusters, nonCompliantClusters,
 		unknownComplianceClusters := bundle.getChangedClusters(policy, originPolicyID)
 
@@ -216,7 +218,8 @@ func (bundle *DeltaComplianceStatusBundle) getPolicyComplianceStatus(originPolic
 
 // getChangedClusters returns arrays of changed compliance (cluster names).
 func (bundle *DeltaComplianceStatusBundle) getChangedClusters(policy *policyv1.Policy,
-	policyID string) ([]string, []string, []string) {
+	policyID string,
+) ([]string, []string, []string) {
 	compliantClusters := make([]string, 0)
 	nonCompliantClusters := make([]string, 0)
 	unknownComplianceClusters := make([]string, 0)
@@ -261,7 +264,8 @@ func (bundle *DeltaComplianceStatusBundle) getChangedClusters(policy *policyv1.P
 
 // updatePolicyComplianceStatus updates compliance statuses of an already listed policy object.
 func (bundle *DeltaComplianceStatusBundle) updatePolicyComplianceStatus(policyIndex int,
-	newPolicyStatus *statusbundle.PolicyGenericComplianceStatus) {
+	newPolicyStatus *statusbundle.PolicyGenericComplianceStatus,
+) {
 	// get existing policy state
 	existingPolicyState := bundle.getExistingPolicyState(policyIndex)
 

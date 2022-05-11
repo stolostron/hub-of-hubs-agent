@@ -9,14 +9,13 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
+	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaconsumer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-consumer"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
-
-	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 )
 
 // Consumer abstracts hub-of-hubs-kafka-transport kafka-consumer's generic usage.
@@ -28,7 +27,7 @@ type KafkaComsumer struct {
 	topic          string
 
 	messageChan                     chan *kafka.Message
-	genericBundlesChan              chan *bundle.GenericBundle       // messageChan get the message from kafka and put it to the genericBundleChan
+	genericBundlesChan              chan *bundle.GenericBundle // messageChan get the message from kafka and put it to the genericBundleChan
 	customBundleIDToRegistrationMap map[string]*bundle.CustomBundleRegistration
 
 	partitionToOffsetToCommitMap map[int32]kafka.Offset // size limited at all times (low)
@@ -119,7 +118,7 @@ func (c *KafkaComsumer) processMessage(message *kafka.Message) {
 		if string(msgDestinationLeafHubBytes) != c.leafHubName {
 			return // if destination is explicitly specified and does not match, drop bundle
 		}
-	} 				 // if header is not found then assume broadcast
+	} // if header is not found then assume broadcast
 
 	compressionTypeBytes, found := c.lookupHeaderValue(message, headers.CompressionType)
 	if !found {
@@ -172,7 +171,6 @@ func (c *KafkaComsumer) SyncCustomBundle(customBundleRegistration *bundle.Custom
 	customBundleRegistration.BundleUpdatesChan <- receivedBundle
 	return nil
 }
-
 
 func (c *KafkaComsumer) logError(err error, errMessage string, msg *kafka.Message) {
 	c.log.Error(err, errMessage, "MessageKey", string(msg.Key), "TopicPartition", msg.TopicPartition)

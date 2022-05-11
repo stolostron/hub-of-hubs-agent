@@ -7,12 +7,11 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
+	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	clusterV1 "open-cluster-management.io/api/cluster/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
 
 const (
@@ -38,11 +37,11 @@ func AddClustersStatusController(mgr ctrl.Manager, producer producer.Producer, l
 	predicateFunc := func() bool { // bundle predicate
 		return hubOfHubsConfig.Spec.AggregationLevel == configV1.Full ||
 			hubOfHubsConfig.Spec.AggregationLevel == configV1.Minimal
-			// at this point send all managed clusters even if aggregation level is minimal
+		// at this point send all managed clusters even if aggregation level is minimal
 	}
 
 	bundleCollection := []*generic.BundleCollectionEntry{ // single bundle for managed clusters
-		generic.NewBundleCollectionEntry(transportBundleKey, 
+		generic.NewBundleCollectionEntry(transportBundleKey,
 			bundle.NewGenericStatusBundle(leafHubName, incarnation, manipulateObjFunc),
 			predicateFunc),
 	}

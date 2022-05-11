@@ -4,13 +4,14 @@ import (
 	"sync"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 )
 
 // NewClustersPerPolicyBundle creates a new instance of ClustersPerPolicyBundle.
 func NewClustersPerPolicyBundle(leafHubName string, incarnation uint64,
-	extractObjIDFunc bundlepkg.ExtractObjIDFunc) bundlepkg.Bundle {
+	extractObjIDFunc bundlepkg.ExtractObjIDFunc,
+) bundlepkg.Bundle {
 	return &ClustersPerPolicyBundle{
 		BaseClustersPerPolicyBundle: statusbundle.BaseClustersPerPolicyBundle{
 			Objects:       make([]*statusbundle.PolicyGenericComplianceStatus, 0),
@@ -107,7 +108,8 @@ func (bundle *ClustersPerPolicyBundle) getObjectIndexByUID(uid string) (int, err
 // getClusterStatuses returns (list of compliant clusters, list of nonCompliant clusters, list of unknown clusters,
 // list of all clusters).
 func (bundle *ClustersPerPolicyBundle) getClusterStatuses(policy *policiesv1.Policy) ([]string, []string, []string,
-	[]string) {
+	[]string,
+) {
 	compliantClusters := make([]string, 0)
 	nonCompliantClusters := make([]string, 0)
 	unknownComplianceClusters := make([]string, 0)
@@ -136,7 +138,8 @@ func (bundle *ClustersPerPolicyBundle) getClusterStatuses(policy *policiesv1.Pol
 }
 
 func (bundle *ClustersPerPolicyBundle) getClustersPerPolicy(originPolicyID string,
-	policy *policiesv1.Policy) *statusbundle.PolicyGenericComplianceStatus {
+	policy *policiesv1.Policy,
+) *statusbundle.PolicyGenericComplianceStatus {
 	compliantClusters, nonCompliantClusters, unknownComplianceClusters, _ := bundle.getClusterStatuses(policy)
 
 	return &statusbundle.PolicyGenericComplianceStatus{

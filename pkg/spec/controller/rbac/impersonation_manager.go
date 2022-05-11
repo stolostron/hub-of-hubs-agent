@@ -90,7 +90,8 @@ func (manager *ImpersonationManager) GetUserGroups(obj interface{}) (string, []s
 }
 
 func (manager *ImpersonationManager) decodeBase64IdentityAnnotation(annotations map[string]string,
-	annotationToDecode string) (string, error) {
+	annotationToDecode string,
+) (string, error) {
 	if base64Value, found := annotations[annotationToDecode]; found { // if annotation exists
 		decodedValue, err := base64.StdEncoding.DecodeString(base64Value)
 		if err != nil {

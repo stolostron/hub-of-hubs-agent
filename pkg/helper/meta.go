@@ -34,7 +34,6 @@ func HasLabel(obj metav1.Object, label string) bool {
 	return found
 }
 
-
 // AddAnnotations adds the given annotations to the given object. if obj is nil or annotations are nil, it's a no-op.
 func AddAnnotations(obj metav1.Object, annotations map[string]string) {
 	if obj == nil || annotations == nil {

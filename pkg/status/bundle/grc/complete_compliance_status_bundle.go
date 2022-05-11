@@ -4,13 +4,14 @@ import (
 	"sync"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 )
 
 // NewCompleteComplianceStatusBundle creates a new instance of ComplianceStatusBundle.
 func NewCompleteComplianceStatusBundle(leafHubName string, baseBundle bundlepkg.Bundle, incarnation uint64,
-	extractObjIDFunc bundlepkg.ExtractObjIDFunc) bundlepkg.Bundle {
+	extractObjIDFunc bundlepkg.ExtractObjIDFunc,
+) bundlepkg.Bundle {
 	return &ComplianceStatusBundle{
 		BaseCompleteComplianceStatusBundle: statusbundle.BaseCompleteComplianceStatusBundle{
 			Objects:           make([]*statusbundle.PolicyCompleteComplianceStatus, 0),
@@ -115,7 +116,8 @@ func (bundle *ComplianceStatusBundle) getObjectIndexByUID(uid string) (int, erro
 }
 
 func (bundle *ComplianceStatusBundle) getPolicyComplianceStatus(originPolicyID string,
-	policy *policiesv1.Policy) *statusbundle.PolicyCompleteComplianceStatus {
+	policy *policiesv1.Policy,
+) *statusbundle.PolicyCompleteComplianceStatus {
 	nonCompliantClusters, unknownComplianceClusters := bundle.getNonCompliantAndUnknownClusters(policy)
 
 	return &statusbundle.PolicyCompleteComplianceStatus{
@@ -127,7 +129,8 @@ func (bundle *ComplianceStatusBundle) getPolicyComplianceStatus(originPolicyID s
 
 // returns a list of non compliant clusters and a list of unknown compliance clusters.
 func (bundle *ComplianceStatusBundle) getNonCompliantAndUnknownClusters(policy *policiesv1.Policy) ([]string,
-	[]string) {
+	[]string,
+) {
 	nonCompliantClusters := make([]string, 0)
 	unknownComplianceClusters := make([]string, 0)
 
@@ -177,7 +180,8 @@ func (bundle *ComplianceStatusBundle) clusterListsEqual(oldClusters []string, ne
 }
 
 func (bundle *ComplianceStatusBundle) containsNonCompliantOrUnknownClusters(
-	policyComplianceStatus *statusbundle.PolicyCompleteComplianceStatus) bool {
+	policyComplianceStatus *statusbundle.PolicyCompleteComplianceStatus,
+) bool {
 	if len(policyComplianceStatus.UnknownComplianceClusters) == 0 &&
 		len(policyComplianceStatus.NonCompliantClusters) == 0 {
 		return false

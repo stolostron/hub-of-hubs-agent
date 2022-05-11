@@ -4,11 +4,10 @@ import (
 	"fmt"
 
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	clustersv1beta1 "open-cluster-management.io/api/cluster/v1beta1"

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	DEFAULT_STATUS_SYNC_INTERVAL      = 5 * time.Second
+	DEFAULT_STATUS_SYNC_INTERVAL       = 5 * time.Second
 	DEFAULT_CONTROL_INFO_SYNC_INTERVAL = 60 * time.Second
 )
 

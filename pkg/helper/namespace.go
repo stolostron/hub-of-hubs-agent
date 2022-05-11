@@ -17,7 +17,7 @@ func CreateNamespaceIfNotExist(ctx context.Context, k8sClient client.Client, nam
 	}
 
 	namespaceObj := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{ Name: namespace },
+		ObjectMeta: metav1.ObjectMeta{Name: namespace},
 	}
 
 	if err := k8sClient.Create(ctx, namespaceObj); err != nil && !apiErrors.IsAlreadyExists(err) {
@@ -26,4 +26,3 @@ func CreateNamespaceIfNotExist(ctx context.Context, k8sClient client.Client, nam
 
 	return nil
 }
-

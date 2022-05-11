@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	STATUS_SYNC_INTERVAL_CONFIGMAP_NAME        = "sync-intervals"
-	STATUS_SYNC_INTERVAL_LOG_NAME = "sync-intervals"
+	STATUS_SYNC_INTERVAL_CONFIGMAP_NAME = "sync-intervals"
+	STATUS_SYNC_INTERVAL_LOG_NAME       = "sync-intervals"
 	// RequeuePeriod is the time to wait until reconciliation retry in failure cases.
 	REQUEUE_PERIOD = 5 * time.Second
 )

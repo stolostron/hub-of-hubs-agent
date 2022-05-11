@@ -3,8 +3,8 @@ package controlinfo
 import (
 	"sync"
 
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
 )
 
 // NewBundle creates a new instance of Bundle.

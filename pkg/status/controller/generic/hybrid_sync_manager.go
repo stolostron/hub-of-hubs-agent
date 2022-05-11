@@ -12,7 +12,6 @@ import (
 
 var errExpectingDeltaStateBundle = errors.New("expecting a BundleCollectionEntry that wraps a DeltaStateBundle bundle")
 
-
 // hybridSyncManager manages two BundleCollectionEntry instances in application of hybrid-sync mode.
 // won't get collected by the GC since callbacks are used.
 type hybridSyncManager struct {
@@ -29,7 +28,8 @@ type hybridSyncManager struct {
 // complete-state bundle and a delta-state bundle.
 func NewHybridSyncManager(log logr.Logger, transportObj producer.Producer,
 	completeStateBundleCollectionEntry *BundleCollectionEntry, deltaStateBundleCollectionEntry *BundleCollectionEntry,
-	sentDeltaCountSwitchFactor int) error {
+	sentDeltaCountSwitchFactor int,
+) error {
 	// check that the delta state collection does indeed wrap a delta bundle
 	deltaStateBundle, ok := deltaStateBundleCollectionEntry.bundle.(bundle.DeltaStateBundle)
 	if !ok {
@@ -57,7 +57,6 @@ func NewHybridSyncManager(log logr.Logger, transportObj producer.Producer,
 
 	return nil
 }
-
 
 func (manager *hybridSyncManager) appendPredicates() {
 	// append predicates for mode-management

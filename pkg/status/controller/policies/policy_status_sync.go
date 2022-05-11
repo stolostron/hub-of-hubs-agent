@@ -19,14 +19,14 @@ import (
 )
 
 const (
-	policiesStatusSyncLog                             = "policies-status-sync"
-	rootPolicyLabel                                   = "policy.open-cluster-management.io/root-policy"
+	policiesStatusSyncLog = "policies-status-sync"
+	rootPolicyLabel       = "policy.open-cluster-management.io/root-policy"
 )
 
 // AddPoliciesStatusController adds policies status controller to the manager.
 func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, env helper.EnvironmentManager,
-	incarnation uint64, hubOfHubsConfig *configV1.Config, syncIntervalsData *syncintervals.SyncIntervals) error {
-
+	incarnation uint64, hubOfHubsConfig *configV1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+) error {
 	bundleCollection, err := createBundleCollection(producer, env, incarnation, hubOfHubsConfig)
 	if err != nil {
 		return fmt.Errorf("failed to add policies controller to the manager - %w", err)
@@ -52,8 +52,8 @@ func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, e
 }
 
 func createBundleCollection(pro producer.Producer, env helper.EnvironmentManager, incarnation uint64,
-	hubOfHubsConfig *configV1.Config) ([]*generic.BundleCollectionEntry, error) {
-
+	hubOfHubsConfig *configV1.Config,
+) ([]*generic.BundleCollectionEntry, error) {
 	deltaSentCountSwitchFactor := env.StatusDeltaCountSwitchFactor
 	leafHubName := env.LeafHubID
 
@@ -91,7 +91,8 @@ func createBundleCollection(pro producer.Producer, env helper.EnvironmentManager
 // The collection entries are returned (or nils with an error if any occurred).
 func getHybridComplianceBundleCollectionEntries(transport producer.Producer, leafHubName string,
 	incarnation uint64, fullStatusPredicate func() bool, clustersPerPolicyBundle bundle.Bundle,
-	deltaCountSwitchFactor int) (*generic.BundleCollectionEntry, *generic.BundleCollectionEntry, error) {
+	deltaCountSwitchFactor int,
+) (*generic.BundleCollectionEntry, *generic.BundleCollectionEntry, error) {
 	// complete compliance status bundle
 	completeComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.PolicyCompleteComplianceMsgKey)
 	completeComplianceStatusBundle := grc.NewCompleteComplianceStatusBundle(leafHubName, clustersPerPolicyBundle,

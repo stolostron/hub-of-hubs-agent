@@ -6,10 +6,9 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/rbac"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/rbac"
 )
 
 // Workpool pool that creates all k8s workers and the assigns k8s jobs to available workers.
@@ -27,7 +26,7 @@ type WorkerPool struct {
 
 // AddK8sWorkerPool adds k8s workers pool to the manager and returns it.
 func AddWorkerPool(log logr.Logger, workpoolSize int, manager ctrl.Manager) (*WorkerPool, error) {
-	config, err := rest.InClusterConfig()  // creates the in-cluster config
+	config, err := rest.InClusterConfig() // creates the in-cluster config
 	if err != nil {
 		return nil, fmt.Errorf("failed to get in cluster kubeconfig - %w", err)
 	}
@@ -52,7 +51,6 @@ func AddWorkerPool(log logr.Logger, workpoolSize int, manager ctrl.Manager) (*Wo
 
 	return workerPool, nil
 }
-
 
 // Start function starts the k8s workers pool.
 func (pool *WorkerPool) Start(ctx context.Context) error {

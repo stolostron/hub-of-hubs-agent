@@ -7,17 +7,15 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaproducer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-producer"
 	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 )
 
 const (
-	maxMessageSizeLimit = 987 // to make sure that the message size is below 1 MB.
-	partition           = 0
-	kiloBytesToBytes    = 1000
+	partition        = 0
+	kiloBytesToBytes = 1000
 )
 
 // Producer abstracts hub-of-hubs-kafka-transport kafka-producer's generic usage.
@@ -33,17 +31,15 @@ type KafkaProducer struct {
 	stopOnce             sync.Once
 }
 
-
 // NewProducer returns a new instance of Producer object.
 func NewKafkaProducer(compressor compressors.Compressor, log logr.Logger, environmentManager *helper.EnvironmentManager) (*KafkaProducer, error) {
-
 	configMap, err := environmentManager.GetProducerKafkaConfigMap()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get kafka configMap")
 	}
 
 	deliveryChan := make(chan kafka.Event)
-	kafkaProducer, err := kafkaproducer.NewKafkaProducer(configMap, environmentManager.Kafka.ProducerMessageLimit * kiloBytesToBytes, deliveryChan)
+	kafkaProducer, err := kafkaproducer.NewKafkaProducer(configMap, environmentManager.Kafka.ProducerMessageLimit*kiloBytesToBytes, deliveryChan)
 	if err != nil {
 		close(deliveryChan)
 		return nil, fmt.Errorf("failed to create producer: %w", err)
@@ -146,5 +142,5 @@ func (p *KafkaProducer) SendAsync(msg *Message) {
 	}
 
 	p.eventSubscriptionMap[msg.ID][DeliveryAttempt]()
-	p.log.Info("Message sent successfully", "MessageId", msg.ID, "MessageType", msg.MsgType,"Version", msg.Version)
+	p.log.Info("Message sent successfully", "MessageId", msg.ID, "MessageType", msg.MsgType, "Version", msg.Version)
 }

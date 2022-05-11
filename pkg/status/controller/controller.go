@@ -6,19 +6,18 @@ package controller
 import (
 	"fmt"
 
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/apps"
 	configCtrl "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/config"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/controlinfo"
 	localpolicies "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/local_policies"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/localplacement"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/managedclusters"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/placement"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/policies"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/placement"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -38,8 +37,8 @@ func AddControllers(mgr ctrl.Manager, pro producer.Producer, env helper.Environm
 		return fmt.Errorf("failed to add PoliciesStatusController controller: %w", err)
 	}
 
-	addControllerFunctions := []func(ctrl.Manager, producer.Producer, string, uint64, *configV1.Config, *syncintervals.SyncIntervals) error {
-		managedclusters.AddClustersStatusController, 
+	addControllerFunctions := []func(ctrl.Manager, producer.Producer, string, uint64, *configV1.Config, *syncintervals.SyncIntervals) error{
+		managedclusters.AddClustersStatusController,
 		placement.AddPlacementRulesController,
 		placement.AddPlacementsController,
 		placement.AddPlacementDecisionsController,

@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	controllerName           = "leaf-hub-agent-sync"
-	notFoundErrorSuffix      = "not found"
+	controllerName      = "leaf-hub-agent-sync"
+	notFoundErrorSuffix = "not found"
 )
 
 // UpdateObject function updates a given k8s object.

@@ -19,7 +19,8 @@ const (
 
 // AddPlacementDecisionsController adds placement-decision controller to the manager.
 func AddPlacementDecisionsController(mgr ctrl.Manager, transport producer.Producer, leafHubName string,
-	incarnation uint64, _ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals) error {
+	incarnation uint64, _ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+) error {
 	createObjFunction := func() bundle.Object { return &clustersv1beta1.PlacementDecision{} }
 
 	bundleCollection := []*generic.BundleCollectionEntry{

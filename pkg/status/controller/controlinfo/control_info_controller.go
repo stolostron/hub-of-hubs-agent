@@ -31,7 +31,8 @@ type LeafHubControlInfoController struct {
 
 // AddControlInfoController creates a new instance of control info controller and adds it to the manager.
 func AddControlInfoController(mgr ctrl.Manager, transport producer.Producer, leafHubName string, incarnation uint64,
-	_ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals) error {
+	_ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+) error {
 	transportBundleKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.ControlInfoMsgKey)
 
 	controlInfoCtrl := &LeafHubControlInfoController{
@@ -91,7 +92,7 @@ func (c *LeafHubControlInfoController) syncBundle() {
 
 	payloadBytes, err := json.Marshal(c.bundle)
 	if err != nil {
-		c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", datatypes.StatusBundle,  c.transportBundleKey, err), "failed to sync bundle")
+		c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", datatypes.StatusBundle, c.transportBundleKey, err), "failed to sync bundle")
 	}
 
 	transportMessageKey := c.transportBundleKey

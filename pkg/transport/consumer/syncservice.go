@@ -11,12 +11,11 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/open-horizon/edge-sync-service-client/client"
+	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
-
-	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
 )
 
 const (

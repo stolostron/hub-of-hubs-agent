@@ -7,16 +7,15 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/open-horizon/edge-sync-service-client/client"
-	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
-
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
 )
 
 const (
 	// envVarSyncServiceProtocol = "SYNC_SERVICE_PROTOCOL"
 	// envVarSyncServiceHost     = "SYNC_SERVICE_HOST"
 	// envVarSyncServicePort     = "SYNC_SERVICE_PORT"
-	compressionHeader         = "Content-Encoding"
+	compressionHeader = "Content-Encoding"
 )
 
 // SyncService abstracts Sync Service client.
@@ -31,10 +30,8 @@ type SyncServiceProducer struct {
 	stopOnce             sync.Once
 }
 
-
 // NewSyncService creates a new instance of SyncService.
 func NewSyncServiceProducer(compressor compressors.Compressor, log logr.Logger, env *helper.EnvironmentManager) (*SyncServiceProducer, error) {
-
 	syncServiceClient := client.NewSyncServiceClient(env.SyncService.Protocol, env.SyncService.ProducerHost, uint16(env.SyncService.ProducerPort))
 	syncServiceClient.SetAppKeyAndSecret("user@myorg", "")
 

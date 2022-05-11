@@ -19,7 +19,8 @@ const (
 
 // AddSubscriptionReportsController adds subscription-report controller to the manager.
 func AddSubscriptionReportsController(mgr ctrl.Manager, transport producer.Producer, leafHubName string,
-	incarnation uint64, _ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals) error {
+	incarnation uint64, _ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+) error {
 	createObjFunction := func() bundle.Object { return &appsv1alpha1.SubscriptionReport{} }
 
 	bundleCollection := []*generic.BundleCollectionEntry{

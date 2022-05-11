@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
+	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
-	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 )
 
 // NewMinimalComplianceStatusBundle creates a new instance of MinimalComplianceStatusBundle.
@@ -102,7 +102,8 @@ func (bundle *MinimalComplianceStatusBundle) getObjectIndexByUID(uid string) (in
 }
 
 func (bundle *MinimalComplianceStatusBundle) getMinimalPolicyComplianceStatus(originPolicyID string,
-	policy *policiesv1.Policy) *statusbundle.MinimalPolicyComplianceStatus {
+	policy *policiesv1.Policy,
+) *statusbundle.MinimalPolicyComplianceStatus {
 	appliedClusters, nonCompliantClusters := bundle.getNumOfClusters(policy)
 
 	return &statusbundle.MinimalPolicyComplianceStatus{

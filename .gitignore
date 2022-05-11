@@ -19,3 +19,9 @@ vendor/
 
 # build binary files
 bin
+
+
+.idea
+
+.vscode
+

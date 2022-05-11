@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	clustersv1 "github.com/open-cluster-management/api/cluster/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/syncers"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
 	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // AddToScheme adds only resources that have to be fetched.
@@ -23,14 +22,13 @@ func AddToScheme(scheme *runtime.Scheme) error {
 }
 
 func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, env helper.EnvironmentManager) error {
-	
 	workerPool, err := workers.AddWorkerPool(ctrl.Log.WithName("workers-pool"), env.SpecWorkPoolSize, manager)
 	if err != nil {
 		return fmt.Errorf("failed to add worker pool to runtime manager: %w", err)
 	}
 
-	if err = syncers.AddGenericBundleSyncer(ctrl.Log.WithName("generic-bundle-syncer"), manager, 
-	env.SpecEnforceHohRbac, consumer, workerPool); err != nil {
+	if err = syncers.AddGenericBundleSyncer(ctrl.Log.WithName("generic-bundle-syncer"), manager,
+		env.SpecEnforceHohRbac, consumer, workerPool); err != nil {
 		return fmt.Errorf("failed to add bundles spec syncer to runtime manager: %w", err)
 	}
 
@@ -39,7 +37,6 @@ func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, env h
 		consumer, workerPool); err != nil {
 		return fmt.Errorf("failed to add managed cluster labels syncer to runtime manager: %w", err)
 	}
-	
+
 	return nil
 }
-

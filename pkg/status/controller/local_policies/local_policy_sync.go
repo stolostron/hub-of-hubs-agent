@@ -24,7 +24,8 @@ const (
 
 // AddLocalPoliciesController this function adds a new local policies sync controller.
 func AddLocalPoliciesController(mgr ctrl.Manager, transport producer.Producer, leafHubName string,
-	incarnation uint64, hubOfHubsConfig *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals) error {
+	incarnation uint64, hubOfHubsConfig *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+) error {
 	createObjFunc := func() bundle.Object { return &policiesv1.Policy{} }
 	bundleCollection := createBundleCollection(leafHubName, incarnation, hubOfHubsConfig)
 
@@ -42,7 +43,8 @@ func AddLocalPoliciesController(mgr ctrl.Manager, transport producer.Producer, l
 }
 
 func createBundleCollection(leafHubName string, incarnation uint64,
-	hubOfHubsConfig *configv1.Config) []*generic.BundleCollectionEntry {
+	hubOfHubsConfig *configv1.Config,
+) []*generic.BundleCollectionEntry {
 	extractLocalPolicyIDFunc := func(obj bundle.Object) (string, bool) { return string(obj.GetUID()), true }
 
 	// clusters per policy (base bundle)

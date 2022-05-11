@@ -13,6 +13,7 @@ type Job struct {
 	obj         interface{}
 	handlerFunc func(context.Context, client.Client, interface{})
 }
+
 // NewJob creates a new instance of K8sJob.
 func NewJob(obj interface{}, handlerFunc func(context.Context, client.Client, interface{})) *Job {
 	return &Job{

@@ -11,31 +11,30 @@ import (
 )
 
 const (
-	LEAF_HUB_ID    = "LH_ID"
-	POD_NAMESPACE  = "POD_NAMESPACE"
+	LEAF_HUB_ID   = "LH_ID"
+	POD_NAMESPACE = "POD_NAMESPACE"
 
-	TRANSPORT_TYPE = "TRANSPORT_TYPE"
+	TRANSPORT_TYPE                     = "TRANSPORT_TYPE"
 	TRANSPORT_MESSAGE_COMPRESSION_TYPE = "TRANSPORT_MESSAGE_COMPRESSION_TYPE"
 
-	K8S_WORK_POOL_SIZE = "K8S_CLIENTS_POOL_SIZE"
+	K8S_WORK_POOL_SIZE      = "K8S_CLIENTS_POOL_SIZE"
 	KAFKA_BOOTSTRAP_SERVERS = "KAFKA_BOOTSTRAP_SERVERS"
 	KAFKA_SSL_CA            = "KAFKA_SSL_CA"
-	KAFKA_CONSUMER_TOPIC             = "KAFKA_CONSUMER_TOPIC"     //TODO update env topic
+	KAFKA_CONSUMER_TOPIC    = "KAFKA_CONSUMER_TOPIC" // TODO update env topic
 
-	SYNC_SERVICE_PROTOCOL = "SYNC_SERVICE_PROTOCOL"
-	SYNC_SERVICE_CONSUMER_HOST = "SYNC_SERVICE_CONSUMER_HOST"                       // todo update to comsumer
-	SYNC_SERVICE_CONSUMER_PORT = "SYNC_SERVICE_CONSUMER_PORT"                       // todo update to comsumer
+	SYNC_SERVICE_PROTOCOL                  = "SYNC_SERVICE_PROTOCOL"
+	SYNC_SERVICE_CONSUMER_HOST             = "SYNC_SERVICE_CONSUMER_HOST"             // todo update to comsumer
+	SYNC_SERVICE_CONSUMER_PORT             = "SYNC_SERVICE_CONSUMER_PORT"             // todo update to comsumer
 	SYNC_SERVICE_CONSUMER_POLLING_INTERVAL = "SYNC_SERVICE_CONSUMER_POLLING_INTERVAL" // todo update to comsumer
 
 	SPEC_ENFORCE_HOH_RBAC = "ENFORCE_HOH_RBAC"
 
-
-	KAFKA_PRODUCER_ID = "KAFKA_PRODUCER_ID"
-	KAFKA_PRODUCER_TOPIC = "KAFKA_PRODUCER_TOPIC"                  //TODO update env topic
+	KAFKA_PRODUCER_ID           = "KAFKA_PRODUCER_ID"
+	KAFKA_PRODUCER_TOPIC        = "KAFKA_PRODUCER_TOPIC" // TODO update env topic
 	KAFKA_MESSAGE_SIZE_LIMIT_KB = "KAFKA_MESSAGE_SIZE_LIMIT_KB"
 
-	SYNC_SERVICE_PRODUCER_HOST = "SYNC_SERVICE_PRODUCER_HOST"                       // todo update to comsumer
-	SYNC_SERVICE_PRODUCER_PORT = "SYNC_SERVICE_PRODUCER_PORT"                       // todo update to comsumer
+	SYNC_SERVICE_PRODUCER_HOST = "SYNC_SERVICE_PRODUCER_HOST" // todo update to comsumer
+	SYNC_SERVICE_PRODUCER_PORT = "SYNC_SERVICE_PRODUCER_PORT" // todo update to comsumer
 
 	COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR = "COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR"
 
@@ -47,37 +46,38 @@ const (
 )
 
 const (
-		defaultK8sClientsPoolSize = 10
+	defaultK8sClientsPoolSize = 10
+	maxMessageSizeLimit       = 987 // to make sure that the message size is below 1 MB.
 )
 
 type KafkaEnvironment struct {
-	BootstrapServers string
-	SslCa            string
-	ComsumerTopic            string
-	ProducerId string
-	ProducerTopic string
+	BootstrapServers     string
+	SslCa                string
+	ComsumerTopic        string
+	ProducerId           string
+	ProducerTopic        string
 	ProducerMessageLimit int
 }
 
 type SyncServiceEnvironment struct {
-	Protocol string
-	ConsumerHost string
-	ConsumerPort int
+	Protocol                string
+	ConsumerHost            string
+	ConsumerPort            int
 	ConsumerPollingInterval int
-	ProducerHost string
-	ProducerPort int
+	ProducerHost            string
+	ProducerPort            int
 }
 
 type EnvironmentManager struct {
-	LeafHubID     string
-	PodNameSpace  string
-	TransportType string
-	TransportCompressionType string
-	SpecWorkPoolSize int
-	SpecEnforceHohRbac bool
+	LeafHubID                    string
+	PodNameSpace                 string
+	TransportType                string
+	TransportCompressionType     string
+	SpecWorkPoolSize             int
+	SpecEnforceHohRbac           bool
 	StatusDeltaCountSwitchFactor int
-	Kafka         KafkaEnvironment
-	SyncService SyncServiceEnvironment
+	Kafka                        KafkaEnvironment
+	SyncService                  SyncServiceEnvironment
 }
 
 func NewEnvironmentManager() (*EnvironmentManager, error) {
@@ -197,6 +197,10 @@ func NewEnvironmentManager() (*EnvironmentManager, error) {
 		return nil, fmt.Errorf("environment variable %q is not valid", KAFKA_MESSAGE_SIZE_LIMIT_KB)
 	}
 
+	if kafkaValidMessageSizeLimit > maxMessageSizeLimit {
+		return nil, fmt.Errorf("%s - size must not exceed %d", KAFKA_MESSAGE_SIZE_LIMIT_KB, maxMessageSizeLimit)
+	}
+
 	statusCountSwitchFactor, exit := os.LookupEnv(COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR)
 	if !exit {
 		return nil, fmt.Errorf("not found environment variable: %q", COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR)
@@ -207,28 +211,28 @@ func NewEnvironmentManager() (*EnvironmentManager, error) {
 	}
 
 	environmentManager := &EnvironmentManager{
-		LeafHubID:     leafHubId,
-		PodNameSpace:  podNameSpace,
-		TransportType: transportType,
-		TransportCompressionType: transportMessageCompressionType,
-		SpecWorkPoolSize: k8sValidWorkPoolSize,
-		SpecEnforceHohRbac: enforceHohRbac,
+		LeafHubID:                    leafHubId,
+		PodNameSpace:                 podNameSpace,
+		TransportType:                transportType,
+		TransportCompressionType:     transportMessageCompressionType,
+		SpecWorkPoolSize:             k8sValidWorkPoolSize,
+		SpecEnforceHohRbac:           enforceHohRbac,
 		StatusDeltaCountSwitchFactor: statusValidCountSwitchFactor,
 		Kafka: KafkaEnvironment{
-			BootstrapServers: kafkaBootstrapServers,
-			SslCa:            kafkaSslBase64EncodedCertificate,
-			ComsumerTopic:            kafkaConsumerTopic,
-			ProducerId: kafkaProducerId,
-			ProducerTopic: kafkaProducerTopic,
+			BootstrapServers:     kafkaBootstrapServers,
+			SslCa:                kafkaSslBase64EncodedCertificate,
+			ComsumerTopic:        kafkaConsumerTopic,
+			ProducerId:           kafkaProducerId,
+			ProducerTopic:        kafkaProducerTopic,
 			ProducerMessageLimit: kafkaValidMessageSizeLimit,
 		},
 		SyncService: SyncServiceEnvironment{
-			Protocol: syncServiceProtocol,
-			ConsumerHost: syncServiceConsumerHost,
-			ConsumerPort: syncServiceValidConsumerPort,
+			Protocol:                syncServiceProtocol,
+			ConsumerHost:            syncServiceConsumerHost,
+			ConsumerPort:            syncServiceValidConsumerPort,
 			ConsumerPollingInterval: syncServiceValidConsumerPollingInterval,
-			ProducerHost: syncServiceProducerHost,
-			ProducerPort: syncServiceValidProducerPort,
+			ProducerHost:            syncServiceProducerHost,
+			ProducerPort:            syncServiceValidProducerPort,
 		},
 	}
 	return environmentManager, nil
@@ -267,7 +271,6 @@ func (environmentManager *EnvironmentManager) GetProducerKafkaConfigMap() (*kafk
 	}
 	return kafkaConfigMap, nil
 }
-
 
 func loadSslToConfigMap(kafkaConfigMap *kafka.ConfigMap) error {
 	if sslBase64EncodedCertificate, found := os.LookupEnv(KAFKA_SSL_CA); found {

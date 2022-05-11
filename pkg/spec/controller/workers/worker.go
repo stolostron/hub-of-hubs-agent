@@ -39,7 +39,7 @@ func (worker *Worker) start(ctx context.Context) {
 		worker.log.Info("worker %d is running", worker.id)
 		for {
 			select {
-			case <-ctx.Done():             // received a signal to stop
+			case <-ctx.Done(): // received a signal to stop
 				return
 			case job := <-worker.jobQueue: // Worker received a job request.
 				job.handlerFunc(ctx, worker.client, job.obj)
