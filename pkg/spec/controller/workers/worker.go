@@ -36,7 +36,7 @@ func newWorkerWithClient(log logr.Logger, id int, k8sClient client.Client, jobsQ
 
 func (worker *Worker) start(ctx context.Context) {
 	go func() {
-		worker.log.Info("worker %d is running", worker.id)
+		worker.log.Info("start running worker", "Id: ", worker.id)
 		for {
 			select {
 			case <-ctx.Done(): // received a signal to stop
