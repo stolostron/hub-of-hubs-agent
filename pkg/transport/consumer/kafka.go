@@ -9,13 +9,14 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
-	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaconsumer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-consumer"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
+
+	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 )
 
 // Consumer abstracts hub-of-hubs-kafka-transport kafka-consumer's generic usage.
@@ -108,6 +109,7 @@ func (c *KafkaComsumer) handleKafkaMessages(ctx context.Context) {
 			return
 
 		case msg := <-c.messageChan:
+			c.log.Info("received message and forward to bundle chan...")
 			c.processMessage(msg)
 		}
 	}

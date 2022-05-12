@@ -10,16 +10,17 @@ import (
 
 	"github.com/go-logr/logr"
 	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
-	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	"github.com/stolostron/hub-of-hubs-data-types/bundle/spec"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
+	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 )
 
 const (
@@ -93,7 +94,7 @@ func (syncer *managedClusterLabelsBundleSyncer) sync(ctx context.Context) {
 			if !ok {
 				continue
 			}
-
+			syncer.log.Info("get bundle from label bundle chan")
 			syncer.setLatestBundle(receivedBundle) // uses latestBundleLock
 		}
 	}
@@ -148,6 +149,7 @@ func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labels
 	) {
 		defer syncer.bundleProcessingWaitingGroup.Done()
 
+		syncer.log.Info("update the label bundle to ManagedCluster CR...")
 		labelsSpec, ok := obj.(*spec.ManagedClusterLabelsSpec)
 		if !ok {
 			syncer.log.Error(errors.New("job obj is not a ManagedClusterLabelsSpec type"), "invald obj type")

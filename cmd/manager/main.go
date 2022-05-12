@@ -13,11 +13,6 @@ import (
 	policiesV1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/spf13/pflag"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	specController "github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
-	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
-	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	v1 "k8s.io/api/core/v1"
@@ -31,6 +26,13 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
+
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	specController "github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
+	statusController "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller"
+	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
+	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
 
 const (
@@ -177,6 +179,10 @@ func createManager(consumer consumer.Consumer, producer producer.Producer, envir
 
 	if err := specController.AddSyncersToManager(mgr, consumer, *environmentManager); err != nil {
 		return nil, fmt.Errorf("failed to add spec syncer: %w", err)
+	}
+
+	if err := statusController.AddControllers(mgr, producer, *environmentManager, incarnation); err != nil {
+		return nil, fmt.Errorf("failed to add status syncer: %w", err)
 	}
 
 	return mgr, nil

@@ -3,6 +3,8 @@ package managedclusters
 import (
 	"fmt"
 
+	// clusterV1 "open-cluster-management.io/api/cluster/v1"
+	clusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
@@ -10,7 +12,6 @@ import (
 	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
-	clusterV1 "open-cluster-management.io/api/cluster/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
