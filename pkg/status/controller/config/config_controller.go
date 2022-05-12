@@ -8,7 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,11 +23,11 @@ const (
 type hubOfHubsConfigController struct {
 	client       client.Client
 	log          logr.Logger
-	configObject *configv1.Config
+	configObject *configV1.Config
 }
 
 // AddConfigController creates a new instance of config controller and adds it to the manager.
-func AddConfigController(mgr ctrl.Manager, configObject *configv1.Config) error {
+func AddConfigController(mgr ctrl.Manager, configObject *configV1.Config) error {
 	hubOfHubsConfigCtrl := &hubOfHubsConfigController{
 		client:       mgr.GetClient(),
 		log:          ctrl.Log.WithName(configLogName),
@@ -42,7 +42,7 @@ func AddConfigController(mgr ctrl.Manager, configObject *configv1.Config) error 
 	})
 
 	if err := ctrl.NewControllerManagedBy(mgr).
-		For(&configv1.Config{}).
+		For(&configV1.Config{}).
 		WithEventFilter(predicate.And(hohNamespacePredicate, ownerRefAnnotationPredicate)).
 		Complete(hubOfHubsConfigCtrl); err != nil {
 		return fmt.Errorf("failed to add hub of hubs config controller to the manager - %w", err)
