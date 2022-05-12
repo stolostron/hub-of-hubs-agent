@@ -95,11 +95,11 @@ func (p *KafkaProducer) handleDeliveryReport(kafkaMessage *kafka.Message) {
 	if kafkaMessage.TopicPartition.Error != nil {
 		p.log.Error(kafkaMessage.TopicPartition.Error, "failed to deliver message",
 			"MessageId", string(kafkaMessage.Key), "TopicPartition", kafkaMessage.TopicPartition)
-		p.eventSubscriptionMap[string(kafkaMessage.Key)][DeliveryFailure]()
+		InvokeCallback(p.eventSubscriptionMap, string(kafkaMessage.Key), DeliveryFailure)
 		return
 	}
 
-	p.eventSubscriptionMap[string(kafkaMessage.Key)][DeliverySuccess]()
+	InvokeCallback(p.eventSubscriptionMap, string(kafkaMessage.Key), DeliverySuccess)
 }
 
 // Subscribe adds a callback to be delegated when a given event occurs for a message with the given ID.
@@ -137,10 +137,10 @@ func (p *KafkaProducer) SendAsync(msg *Message) {
 	if err = p.kafkaProducer.ProduceAsync(msg.Key, p.topic, partition, messageHeaders, compressedBytes); err != nil {
 		p.log.Error(err, "failed to send message", "MessageKey", msg.Key, "MessageId", msg.ID,
 			"MessageType", msg.MsgType, "Version", msg.Version)
-		p.eventSubscriptionMap[msg.ID][DeliveryFailure]()
+		InvokeCallback(p.eventSubscriptionMap, string(msg.ID), DeliveryFailure)
+
 		return
 	}
-
-	p.eventSubscriptionMap[msg.ID][DeliveryAttempt]()
+	InvokeCallback(p.eventSubscriptionMap, string(msg.ID), DeliveryAttempt)
 	p.log.Info("Message sent successfully", "MessageId", msg.ID, "MessageType", msg.MsgType, "Version", msg.Version)
 }
