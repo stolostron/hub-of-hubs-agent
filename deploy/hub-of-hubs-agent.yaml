@@ -1,10 +1,4 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: hoh-system
----
-
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sync-intervals
@@ -13,91 +7,6 @@ data:
   managed_clusters: "5s"
   policies: "5s"
   control_info: "60m"
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations: 
-    controller-gen.kubebuilder.io/version: v0.6.1
-  name: configs.hub-of-hubs.open-cluster-management.io
-spec:
-  group: hub-of-hubs.open-cluster-management.io
-  names:
-    kind: Config
-    listKind: ConfigList
-    plural: configs
-    singular: config
-  scope: Namespaced
-  versions:
-  - name: v1
-    schema:
-      openAPIV3Schema:
-        description: Config is the Schema for the configs API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the
-              latest internal value, and may reject unrecognized values. More
-              info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource
-              this object represents. Servers may infer this from the endpoint
-              the client submits requests to. Cannot be updated. In CamelCase.
-              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: ConfigSpec defines the desired state of Config
-            properties:
-              aggregationLevel:
-                description: AggregationLevel specifies the level of aggregation
-                  leaf hubs should do before sending the information
-                enum:
-                - full
-                - minimal
-                type: string
-              enableLocalPolicies:
-                type: boolean
-              heartbeatIntervals:
-                description: HeartbeatIntervals defines heartbeat intervals
-                  for HoH and Leaf hub in seconds
-                properties:
-                  hohInSeconds:
-                    format: int64
-                    type: integer
-                  leafHubInSeconds:
-                    format: int64
-                    type: integer
-                type: object
-            type: object
-          status:
-            description: ConfigStatus defines the observed state of Config
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
----
-apiVersion: hub-of-hubs.open-cluster-management.io/v1
-kind: Config
-metadata:
-  annotations:
-    hub-of-hubs.open-cluster-management.io/originOwnerReferenceUid: 53bdbd3a-0ca8-46a5-b26f-82d39f146342
-  generation: 1
-  labels:
-    name: hub-of-hubs-config
-  name: hub-of-hubs-config
-  namespace: hoh-system
-spec:
-  aggregationLevel: full
-  enableLocalPolicies: true
-  heartbeatIntervals:
-    hohInSeconds: 60
-    leafHubInSeconds: 60
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -122,6 +31,11 @@ spec:
             - '--zap-devel=true'
           imagePullPolicy: Always
           env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                 apiVersion: v1
+                 fieldPath: metadata.namespace
             - name: WATCH_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -142,27 +56,20 @@ spec:
             - name: SYNC_SERVICE_PROTOCOL
               value: "$SYNC_SERVICE_PROTOCOL"
             - name: SYNC_SERVICE_HOST
-              value: $SYNC_SERVICE_HOST
+              value: "$SYNC_SERVICE_HOST"
             - name: SYNC_SERVICE_PORT
               value: "$SYNC_SERVICE_PORT"
             - name: SYNC_SERVICE_POLLING_INTERVAL
-              value: $SYNC_SERVICE_POLLING_INTERVAL
+              value: "$SYNC_SERVICE_POLLING_INTERVAL"
             - name: K8S_CLIENTS_POOL_SIZE
               value: "$K8S_CLIENTS_POOL_SIZE"
             - name: ENFORCE_HOH_RBAC
               value: "$ENFORCE_HOH_RBAC"
-            - name: POD_NAMESPACE
-              valueFrom:
-                fieldRef:
-                 apiVersion: v1
-                 fieldPath: metadata.namespace
-
             - name: TRANSPORT_MESSAGE_COMPRESSION_TYPE
               value: "$TRANSPORT_MESSAGE_COMPRESSION_TYPE"
             - name: KAFKA_PRODUCER_ID
-              value: $KAFKA_PRODUCER_ID
+              value: "$KAFKA_PRODUCER_ID"
             - name: KAFKA_MESSAGE_SIZE_LIMIT_KB
-              value: $KAFKA_MESSAGE_SIZE_LIMIT_KB
+              value: "$KAFKA_MESSAGE_SIZE_LIMIT_KB"
             - name: COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR
-              value: $COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR
-              
+              value: "$COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR"
