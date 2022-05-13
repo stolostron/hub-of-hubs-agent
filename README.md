@@ -58,7 +58,8 @@ Set the following environment variables in ./deploy/hub-of-hubs-agent.yaml
 * K8S_CLIENTS_POOL_SIZE - the goroutine number to propagate the bundles on managed cluster
 * SYNC_SERVICE_POLLING_INTERVAL - the interval of spec-sync
 * KAFKA_SSL_CA - the authentication to connect to the kafka.
-* COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR - "10" 
+* COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR - "100"
+* ENFORCE_HOH_RBAC - enable hoh RBAC or not, default "false"
 
 <!-- `POD_NAMESPACE` should usually be `open-cluster-management`.
 
@@ -67,8 +68,8 @@ Set the following environment variables in ./deploy/hub-of-hubs-agent.yaml
 -->
 
 ```bash
-oc deploy ./deploy/hub-of-hubs-rbac.yaml
-oc deploy ./deploy/hub-of-hubs-agent.yaml
+oc apply -n open-cluster-management -f ./deploy/hub-of-hubs-rbac.yaml
+envsub < ./deploy/hub-of-hubs-agent.yaml | oc apply -n open-cluster-management -f -
 ```
 
 
