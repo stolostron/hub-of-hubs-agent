@@ -24,7 +24,7 @@ const (
 )
 
 // AddPoliciesStatusController adds policies status controller to the manager.
-func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, env helper.EnvironmentManager,
+func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, env helper.ConfigManager,
 	incarnation uint64, hubOfHubsConfig *configV1.Config, syncIntervalsData *syncintervals.SyncIntervals,
 ) error {
 	bundleCollection, err := createBundleCollection(producer, env, incarnation, hubOfHubsConfig)
@@ -51,11 +51,11 @@ func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, e
 	return nil
 }
 
-func createBundleCollection(pro producer.Producer, env helper.EnvironmentManager, incarnation uint64,
+func createBundleCollection(pro producer.Producer, env helper.ConfigManager, incarnation uint64,
 	hubOfHubsConfig *configV1.Config,
 ) ([]*generic.BundleCollectionEntry, error) {
 	deltaSentCountSwitchFactor := env.StatusDeltaCountSwitchFactor
-	leafHubName := env.LeafHubID
+	leafHubName := env.LeafHubName
 
 	// clusters per policy (base bundle)
 	clustersPerPolicyTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.ClustersPerPolicyMsgKey)

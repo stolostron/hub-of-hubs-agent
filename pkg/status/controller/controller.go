@@ -22,7 +22,7 @@ import (
 )
 
 // AddControllers adds all the controllers to the Manager.
-func AddControllers(mgr ctrl.Manager, pro producer.Producer, env helper.EnvironmentManager, incarnation uint64) error {
+func AddControllers(mgr ctrl.Manager, pro producer.Producer, configManager helper.ConfigManager, incarnation uint64) error {
 	config := &configV1.Config{}
 	if err := configCtrl.AddConfigController(mgr, config); err != nil {
 		return fmt.Errorf("failed to add ConfigMap controller: %w", err)
@@ -33,7 +33,7 @@ func AddControllers(mgr ctrl.Manager, pro producer.Producer, env helper.Environm
 		return fmt.Errorf("failed to add SyncIntervals controller: %w", err)
 	}
 
-	if err := policies.AddPoliciesStatusController(mgr, pro, env, incarnation, config, syncIntervals); err != nil {
+	if err := policies.AddPoliciesStatusController(mgr, pro, configManager, incarnation, config, syncIntervals); err != nil {
 		return fmt.Errorf("failed to add PoliciesStatusController controller: %w", err)
 	}
 
@@ -50,7 +50,7 @@ func AddControllers(mgr ctrl.Manager, pro producer.Producer, env helper.Environm
 	}
 
 	for _, addControllerFunction := range addControllerFunctions {
-		if err := addControllerFunction(mgr, pro, env.LeafHubID, incarnation, config, syncIntervals); err != nil {
+		if err := addControllerFunction(mgr, pro, configManager.LeafHubName, incarnation, config, syncIntervals); err != nil {
 			return fmt.Errorf("failed to add controller: %w", err)
 		}
 	}

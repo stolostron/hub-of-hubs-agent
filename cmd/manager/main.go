@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"runtime"
@@ -12,7 +11,12 @@ import (
 	clustersV1 "github.com/open-cluster-management/api/cluster/v1"
 	policiesV1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
-	"github.com/spf13/pflag"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	specController "github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
+	statusController "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller"
+	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
+	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	v1 "k8s.io/api/core/v1"
@@ -26,13 +30,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	specController "github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller"
-	statusController "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller"
-	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
-	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
 
 const (
@@ -53,16 +50,9 @@ func main() {
 
 // function to handle defers with exit, see https://stackoverflow.com/a/27629493/553720.
 func doMain() int {
-	// TODO test and refactor
-	pflag.CommandLine.AddFlagSet(zap.FlagSet())
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	ctrl.SetLogger(zap.Logger())
-
-	log := ctrl.Log.WithName("cmd")
+	log := initLog()
 	printVersion(log)
-
-	environmentManager, err := helper.NewEnvironmentManager()
+	configManager, err := helper.NewConfigManager()
 	if err != nil {
 		log.Error(err, "failed to load environment variable")
 		return 1
@@ -72,12 +62,12 @@ func doMain() int {
 	genericBundleChan := make(chan *bundle.GenericBundle)
 	defer close(genericBundleChan)
 
-	consumer, err := getConsumer(environmentManager, genericBundleChan)
+	consumer, err := getConsumer(configManager, genericBundleChan)
 	if err != nil {
 		log.Error(err, "transport consumer initialization error")
 		return 1
 	}
-	producer, err := getProducer(environmentManager)
+	producer, err := getProducer(configManager)
 	if err != nil {
 		log.Error(err, "transport producer initialization error")
 	}
@@ -87,7 +77,7 @@ func doMain() int {
 	defer consumer.Stop()
 	defer producer.Stop()
 
-	mgr, err := createManager(consumer, producer, environmentManager)
+	mgr, err := createManager(consumer, producer, configManager)
 	if err != nil {
 		log.Error(err, "failed to create manager")
 		return 1
@@ -103,13 +93,19 @@ func doMain() int {
 	return 0
 }
 
+func initLog() logr.Logger {
+	ctrl.SetLogger(zap.Logger())
+	log := ctrl.Log.WithName("cmd")
+	return log
+}
+
 func printVersion(log logr.Logger) {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 }
 
 // function to choose transport type based on env var.
-func getConsumer(environmentManager *helper.EnvironmentManager, genericBundleChan chan *bundle.GenericBundle) (consumer.Consumer, error) {
+func getConsumer(environmentManager *helper.ConfigManager, genericBundleChan chan *bundle.GenericBundle) (consumer.Consumer, error) {
 	switch environmentManager.TransportType {
 	case TRANSPORT_TYPE_KAFKA:
 		kafkaConsumer, err := consumer.NewKafkaConsumer(ctrl.Log.WithName("kafka-consumer"), environmentManager, genericBundleChan)
@@ -128,7 +124,7 @@ func getConsumer(environmentManager *helper.EnvironmentManager, genericBundleCha
 	}
 }
 
-func getProducer(environmentManager *helper.EnvironmentManager) (producer.Producer, error) {
+func getProducer(environmentManager *helper.ConfigManager) (producer.Producer, error) {
 	messageCompressor, err := compressor.NewCompressor(compressor.CompressionType(environmentManager.TransportCompressionType))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create transport producer message-compressor: %w", err)
@@ -152,7 +148,7 @@ func getProducer(environmentManager *helper.EnvironmentManager) (producer.Produc
 	}
 }
 
-func createManager(consumer consumer.Consumer, producer producer.Producer, environmentManager *helper.EnvironmentManager) (ctrl.Manager, error) {
+func createManager(consumer consumer.Consumer, producer producer.Producer, environmentManager *helper.ConfigManager) (ctrl.Manager, error) {
 	options := ctrl.Options{
 		MetricsBindAddress:      fmt.Sprintf("%s:%d", METRICS_HOST, METRICS_PORT),
 		LeaderElection:          true,

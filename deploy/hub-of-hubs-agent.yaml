@@ -26,9 +26,13 @@ spec:
       serviceAccountName: hub-of-hubs-agent
       containers:
         - name: hub-of-hubs-agent
-          image: $IMAGE
+          image: ${REGISTRY}/hub-of-hubs-agent:${IMAGE_TAG}
           args:
             - '--zap-devel=true'
+            - --pod-namespace=$(POD_NAMESPACE)
+            - --leaf-hub-name=${LEAF_HUB_NAME}
+            - --kafka-bootstrap-server=${KAFKA_BOOTSTRAP_SERVER}
+            - --kafka-ssl-ca=${KAFKA_SSL_CA}
           imagePullPolicy: Always
           env:
             - name: POD_NAMESPACE
@@ -41,35 +45,3 @@ spec:
                 fieldRef:
                  apiVersion: v1
                  fieldPath: metadata.namespace
-            - name: LH_ID
-              value: "$LH_ID"
-            - name: TRANSPORT_TYPE
-              value: "$TRANSPORT_TYPE"
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "$KAFKA_BOOTSTRAP_SERVERS"
-            - name: KAFKA_CONSUMER_TOPIC
-              value: "$KAFKA_CONSUMER_TOPIC"
-            - name: KAFKA_PRODUCER_TOPIC
-              value: "$KAFKA_PRODUCER_TOPIC"
-            - name: KAFKA_SSL_CA
-              value: "$KAFKA_SSL_CA"
-            - name: SYNC_SERVICE_PROTOCOL
-              value: "$SYNC_SERVICE_PROTOCOL"
-            - name: SYNC_SERVICE_HOST
-              value: "$SYNC_SERVICE_HOST"
-            - name: SYNC_SERVICE_PORT
-              value: "$SYNC_SERVICE_PORT"
-            - name: SYNC_SERVICE_POLLING_INTERVAL
-              value: "$SYNC_SERVICE_POLLING_INTERVAL"
-            - name: K8S_CLIENTS_POOL_SIZE
-              value: "$K8S_CLIENTS_POOL_SIZE"
-            - name: ENFORCE_HOH_RBAC
-              value: "$ENFORCE_HOH_RBAC"
-            - name: TRANSPORT_MESSAGE_COMPRESSION_TYPE
-              value: "$TRANSPORT_MESSAGE_COMPRESSION_TYPE"
-            - name: KAFKA_PRODUCER_ID
-              value: "$KAFKA_PRODUCER_ID"
-            - name: KAFKA_MESSAGE_SIZE_LIMIT_KB
-              value: "$KAFKA_MESSAGE_SIZE_LIMIT_KB"
-            - name: COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR
-              value: "$COMPLIANCE_STATUS_DELTA_COUNT_SWITCH_FACTOR"

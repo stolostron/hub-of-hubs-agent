@@ -21,14 +21,14 @@ func AddToScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, env helper.EnvironmentManager) error {
-	workerPool, err := workers.AddWorkerPool(ctrl.Log.WithName("workers-pool"), env.SpecWorkPoolSize, manager)
+func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, configManager helper.ConfigManager) error {
+	workerPool, err := workers.AddWorkerPool(ctrl.Log.WithName("workers-pool"), configManager.SpecWorkPoolSize, manager)
 	if err != nil {
 		return fmt.Errorf("failed to add worker pool to runtime manager: %w", err)
 	}
 
 	if err = syncers.AddGenericBundleSyncer(ctrl.Log.WithName("generic-bundle-syncer"), manager,
-		env.SpecEnforceHohRbac, consumer, workerPool); err != nil {
+		configManager.SpecEnforceHohRbac, consumer, workerPool); err != nil {
 		return fmt.Errorf("failed to add bundles spec syncer to runtime manager: %w", err)
 	}
 

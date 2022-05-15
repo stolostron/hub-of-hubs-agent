@@ -4,19 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
-	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 	datatypes "github.com/stolostron/hub-of-hubs-data-types"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
+	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
+	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
 
 const REQUEUE_PERIOD = 5 * time.Second
@@ -140,7 +142,7 @@ func (c *genericStatusSyncController) addFinalizer(ctx context.Context, object b
 	log.Info("adding finalizer")
 	controllerutil.AddFinalizer(object, c.finalizerName)
 
-	if err := c.client.Update(ctx, object); err != nil {
+	if err := c.client.Update(ctx, object); err != nil && !strings.Contains(err.Error(), "the object has been modified") {
 		return fmt.Errorf("failed to add finalizer %s - %w", c.finalizerName, err)
 	}
 
