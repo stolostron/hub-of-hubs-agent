@@ -36,7 +36,7 @@ The following environment variables are required for the most tasks below:
 - Build Image
 ```bash
 make build-images
-docker push ${REGISTRY}/hub-of-hubs-agent/${IMAGE_TAG}
+docker push ${REGISTRY}/hub-of-hubs-agent:${IMAGE_TAG}
 ```
 - Run 
 ```bash

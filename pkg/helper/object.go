@@ -37,10 +37,10 @@ func UpdateObject(ctx context.Context, k8sClient client.Client, obj *unstructure
 // DeleteObject tries to delete the given object from k8s. returns error and true/false if object was deleted or not.
 func DeleteObject(ctx context.Context, k8sClient client.Client, obj *unstructured.Unstructured) (bool, error) {
 	if err := k8sClient.Delete(ctx, obj); err != nil {
-		if strings.HasSuffix(err.Error(), notFoundErrorSuffix) {
-			return true, fmt.Errorf("failed to delete object - %w", err)
+		if !strings.HasSuffix(err.Error(), notFoundErrorSuffix) {
+			return false, fmt.Errorf("failed to delete object - %w", err)
 		}
-		return false, fmt.Errorf("failed to delete object - %w", err)
+		return false, nil
 	}
 	return true, nil
 }
