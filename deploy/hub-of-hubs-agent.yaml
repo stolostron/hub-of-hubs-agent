@@ -26,7 +26,7 @@ spec:
       serviceAccountName: hub-of-hubs-agent
       containers:
         - name: hub-of-hubs-agent
-          image: $IMAGE
+          image: ${REGISTRY}/hub-of-hubs-agent:${IMAGE_TAG}
           args:
             - '--zap-devel=true'
             - --pod-namespace=$(POD_NAMESPACE)
