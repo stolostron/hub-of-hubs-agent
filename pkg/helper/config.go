@@ -56,7 +56,7 @@ func NewConfigManager() (*ConfigManager, error) {
 	}
 
 	pflag.StringVar(&configManager.LeafHubName, "leaf-hub-name", "", "The name of the leaf hub.")
-	pflag.StringVar(&configManager.Kafka.BootstrapServers, "kafka-bookstrap-server", "", "The bootstrap server for kafka.")
+	pflag.StringVar(&configManager.Kafka.BootstrapServers, "kafka-bootstrap-server", "", "The bootstrap server for kafka.")
 	pflag.StringVar(&configManager.Kafka.SslCa, "kafka-ssl-ca", "", "The authentication to connect to the kafka.")
 
 	pflag.StringVar(&configManager.Kafka.ProducerId, "kafka-producer-id", "", "Producer Id for the kafka, default is the leaf hub name.")
