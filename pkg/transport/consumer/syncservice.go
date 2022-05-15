@@ -42,7 +42,7 @@ type SyncService struct {
 }
 
 // NewSyncService creates a new instance of SyncService.
-func NewSyncService(log logr.Logger, environmentManager *helper.EnvironmentManager, genericBundlesUpdatesChan chan *bundle.GenericBundle) (*SyncService, error) {
+func NewSyncService(log logr.Logger, environmentManager *helper.ConfigManager, genericBundlesUpdatesChan chan *bundle.GenericBundle) (*SyncService, error) {
 	syncServiceConfig := environmentManager.SyncService
 	syncServiceClient := client.NewSyncServiceClient(syncServiceConfig.Protocol, syncServiceConfig.ConsumerHost, uint16(syncServiceConfig.ConsumerPort))
 	syncServiceClient.SetAppKeyAndSecret("user@myorg", "")

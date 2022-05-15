@@ -9,14 +9,13 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/go-logr/logr"
+	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
+	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaconsumer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-consumer"
 	compressor "github.com/stolostron/hub-of-hubs-message-compression"
 	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
-
-	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 )
 
 // Consumer abstracts hub-of-hubs-kafka-transport kafka-consumer's generic usage.
@@ -41,8 +40,8 @@ type KafkaComsumer struct {
 }
 
 // NewConsumer creates a new instance of Consumer.
-func NewKafkaConsumer(log logr.Logger, environmentManager *helper.EnvironmentManager, genericBundlesChan chan *bundle.GenericBundle) (*KafkaComsumer, error) {
-	leafHubName := environmentManager.LeafHubID
+func NewKafkaConsumer(log logr.Logger, environmentManager *helper.ConfigManager, genericBundlesChan chan *bundle.GenericBundle) (*KafkaComsumer, error) {
+	leafHubName := environmentManager.LeafHubName
 	topic := environmentManager.Kafka.ComsumerTopic
 
 	kafkaConfigMap, err := environmentManager.GetKafkaConfigMap()
