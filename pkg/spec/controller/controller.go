@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	clustersv1 "github.com/open-cluster-management/api/cluster/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/syncers"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
 	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // AddToScheme adds only resources that have to be fetched.
@@ -21,6 +22,7 @@ func AddToScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
+// AddSpecSyncers adds spec syncers to the Manager.
 func AddSyncersToManager(manager ctrl.Manager, consumer consumer.Consumer, configManager helper.ConfigManager) error {
 	workerPool, err := workers.AddWorkerPool(ctrl.Log.WithName("workers-pool"), configManager.SpecWorkPoolSize, manager)
 	if err != nil {
