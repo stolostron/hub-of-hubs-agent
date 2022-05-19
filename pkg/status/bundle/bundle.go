@@ -3,7 +3,7 @@ package bundle
 import (
 	"errors"
 
-	"github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -27,7 +27,7 @@ type Bundle interface {
 	// DeleteObject function to delete a single object inside a bundle.
 	DeleteObject(object Object)
 	// GetBundleVersion function to get bundle generation.
-	GetBundleVersion() *status.BundleVersion
+	GetBundleVersion() *statusbundle.BundleVersion
 }
 
 // DeltaStateBundle abstracts the logic needed from the delta-state bundle.

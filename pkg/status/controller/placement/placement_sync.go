@@ -8,8 +8,8 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	clustersv1beta1 "open-cluster-management.io/api/cluster/v1beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,13 +27,13 @@ func AddPlacementsController(mgr ctrl.Manager, transport producer.Producer, leaf
 	createObjFunction := func() bundle.Object { return &clustersv1beta1.Placement{} }
 
 	bundleCollection := []*generic.BundleCollectionEntry{
-		generic.NewBundleCollectionEntry(fmt.Sprintf("%s.%s", leafHubName, datatypes.PlacementMsgKey),
+		generic.NewBundleCollectionEntry(fmt.Sprintf("%s.%s", leafHubName, constants.PlacementMsgKey),
 			bundle.NewGenericStatusBundle(leafHubName, incarnation, cleanPlacement),
 			func() bool { return true }),
 	} // bundle predicate - always send placements.
 
 	ownerRefAnnotationPredicate := predicate.NewPredicateFuncs(func(object client.Object) bool {
-		return helper.HasAnnotation(object, datatypes.OriginOwnerReferenceAnnotation)
+		return helper.HasAnnotation(object, constants.OriginOwnerReferenceAnnotation)
 	})
 
 	if err := generic.NewGenericStatusSyncController(mgr, placementSyncLog, transport, bundleCollection,

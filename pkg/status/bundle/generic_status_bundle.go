@@ -3,7 +3,7 @@ package bundle
 import (
 	"sync"
 
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
 	"k8s.io/apimachinery/pkg/types"
 )
 

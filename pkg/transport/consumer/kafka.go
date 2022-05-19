@@ -14,8 +14,7 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaconsumer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-consumer"
-	compressor "github.com/stolostron/hub-of-hubs-message-compression"
-	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/compressor"
 )
 
 // Consumer abstracts hub-of-hubs-kafka-transport kafka-consumer's generic usage.
@@ -23,7 +22,7 @@ type KafkaComsumer struct {
 	log            logr.Logger
 	leafHubName    string
 	kafkaConsumer  *kafkaconsumer.KafkaConsumer
-	compressorsMap map[compressor.CompressionType]compressors.Compressor
+	compressorsMap map[compressor.CompressionType]compressor.Compressor
 	topic          string
 
 	messageChan                     chan *kafka.Message
@@ -68,7 +67,7 @@ func NewKafkaConsumer(log logr.Logger, environmentManager *helper.ConfigManager,
 		log:                             log,
 		leafHubName:                     leafHubName,
 		kafkaConsumer:                   kafkaConsumer,
-		compressorsMap:                  make(map[compressor.CompressionType]compressors.Compressor),
+		compressorsMap:                  make(map[compressor.CompressionType]compressor.Compressor),
 		topic:                           topic,
 		messageChan:                     messageChan,
 		genericBundlesChan:              genericBundlesChan,

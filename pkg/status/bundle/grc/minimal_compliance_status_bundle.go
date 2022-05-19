@@ -3,10 +3,10 @@ package grc
 import (
 	"sync"
 
-	policiesv1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	bundlepkg "github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
+	policiesv1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 )
 
 // NewMinimalComplianceStatusBundle creates a new instance of MinimalComplianceStatusBundle.
@@ -37,7 +37,7 @@ func (bundle *MinimalComplianceStatusBundle) UpdateObject(object bundlepkg.Objec
 		return // do not handle objects other than policy
 	}
 
-	originPolicyID, found := object.GetAnnotations()[datatypes.OriginOwnerReferenceAnnotation]
+	originPolicyID, found := object.GetAnnotations()[constants.OriginOwnerReferenceAnnotation]
 	if !found {
 		return // origin owner reference annotation not found, not handling this policy (wasn't sent from hub of hubs)
 	}
@@ -69,7 +69,7 @@ func (bundle *MinimalComplianceStatusBundle) DeleteObject(object bundlepkg.Objec
 		return // do not handle objects other than policy
 	}
 
-	originPolicyID, found := object.GetAnnotations()[datatypes.OriginOwnerReferenceAnnotation]
+	originPolicyID, found := object.GetAnnotations()[constants.OriginOwnerReferenceAnnotation]
 	if !found {
 		return // origin owner reference annotation not found, don't handle this policy
 	}

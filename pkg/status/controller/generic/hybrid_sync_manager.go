@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	"github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
 )
 
 var errExpectingDeltaStateBundle = errors.New("expecting a BundleCollectionEntry that wraps a DeltaStateBundle bundle")
@@ -16,8 +16,8 @@ var errExpectingDeltaStateBundle = errors.New("expecting a BundleCollectionEntry
 // won't get collected by the GC since callbacks are used.
 type hybridSyncManager struct {
 	log                        logr.Logger
-	activeSyncMode             status.BundleSyncMode
-	bundleCollectionEntryMap   map[status.BundleSyncMode]*BundleCollectionEntry
+	activeSyncMode             statusbundle.BundleSyncMode
+	bundleCollectionEntryMap   map[statusbundle.BundleSyncMode]*BundleCollectionEntry
 	deltaStateBundle           bundle.DeltaStateBundle
 	sentDeltaCountSwitchFactor int
 	sentDeltaCount             int
@@ -38,10 +38,10 @@ func NewHybridSyncManager(log logr.Logger, transportObj producer.Producer,
 
 	hybridSyncManager := &hybridSyncManager{
 		log:            log,
-		activeSyncMode: status.CompleteStateMode,
-		bundleCollectionEntryMap: map[status.BundleSyncMode]*BundleCollectionEntry{
-			status.CompleteStateMode: completeStateBundleCollectionEntry,
-			status.DeltaStateMode:    deltaStateBundleCollectionEntry,
+		activeSyncMode: statusbundle.CompleteStateMode,
+		bundleCollectionEntryMap: map[statusbundle.BundleSyncMode]*BundleCollectionEntry{
+			statusbundle.CompleteStateMode: completeStateBundleCollectionEntry,
+			statusbundle.DeltaStateMode:    deltaStateBundleCollectionEntry,
 		},
 		deltaStateBundle:           deltaStateBundle,
 		sentDeltaCountSwitchFactor: sentDeltaCountSwitchFactor,
@@ -96,7 +96,7 @@ func (manager *hybridSyncManager) handleTransportationAttempt() {
 	manager.lock.Lock()
 	defer manager.lock.Unlock()
 
-	if manager.activeSyncMode == status.CompleteStateMode {
+	if manager.activeSyncMode == statusbundle.CompleteStateMode {
 		manager.switchToDeltaStateMode()
 		return
 	}
@@ -117,7 +117,7 @@ func (manager *hybridSyncManager) handleTransportationSuccess() {
 	manager.lock.Lock()
 	defer manager.lock.Unlock()
 
-	if manager.activeSyncMode == status.DeltaStateMode {
+	if manager.activeSyncMode == statusbundle.DeltaStateMode {
 		return
 	}
 
@@ -128,7 +128,7 @@ func (manager *hybridSyncManager) handleTransportationFailure() {
 	manager.lock.Lock()
 	defer manager.lock.Unlock()
 
-	if manager.activeSyncMode == status.CompleteStateMode {
+	if manager.activeSyncMode == statusbundle.CompleteStateMode {
 		return
 	}
 
@@ -138,13 +138,13 @@ func (manager *hybridSyncManager) handleTransportationFailure() {
 
 func (manager *hybridSyncManager) switchToCompleteStateMode() {
 	manager.log.Info("switched to complete-state mode")
-	manager.activeSyncMode = status.CompleteStateMode
+	manager.activeSyncMode = statusbundle.CompleteStateMode
 }
 
 func (manager *hybridSyncManager) switchToDeltaStateMode() {
 	manager.log.Info("switched to delta-state mode")
 
-	manager.activeSyncMode = status.DeltaStateMode
+	manager.activeSyncMode = statusbundle.DeltaStateMode
 	manager.sentDeltaCount = 0
 
 	manager.deltaStateBundle.Reset()

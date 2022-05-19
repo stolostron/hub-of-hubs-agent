@@ -9,15 +9,15 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/controller/workers"
 	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	"github.com/stolostron/hub-of-hubs-data-types/bundle/spec"
+	specbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/spec"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1 "open-cluster-management.io/api/cluster/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -32,7 +32,7 @@ type managedClusterLabelsBundleSyncer struct {
 	log               logr.Logger
 	bundleUpdatesChan chan interface{}
 
-	latestBundle                 *spec.ManagedClusterLabelsSpecBundle
+	latestBundle                 *specbundle.ManagedClusterLabelsSpecBundle
 	managedClusterToTimestampMap map[string]*time.Time
 
 	workerPool                   *workers.WorkerPool
@@ -59,9 +59,9 @@ func AddManagedClusterLabelsBundleSyncer(log logr.Logger, mgr ctrl.Manager, cons
 		return fmt.Errorf("failed to add managed cluster labels bundles syncer - %w", err)
 	}
 
-	consumer.Register(datatypes.ManagedClustersLabelsMsgKey, &bundle.CustomBundleRegistration{
+	consumer.Register(constants.ManagedClustersLabelsMsgKey, &bundle.CustomBundleRegistration{
 		InitBundlesResourceFunc: func() interface{} {
-			return &spec.ManagedClusterLabelsSpecBundle{}
+			return &specbundle.ManagedClusterLabelsSpecBundle{}
 		},
 		BundleUpdatesChan: customBundleUpdatesChan,
 	})
@@ -89,7 +89,7 @@ func (syncer *managedClusterLabelsBundleSyncer) sync(ctx context.Context) {
 			return
 
 		case transportedBundle := <-syncer.bundleUpdatesChan: // handle the bundle
-			receivedBundle, ok := transportedBundle.(*spec.ManagedClusterLabelsSpecBundle)
+			receivedBundle, ok := transportedBundle.(*specbundle.ManagedClusterLabelsSpecBundle)
 			if !ok {
 				continue
 			}
@@ -117,7 +117,7 @@ func (syncer *managedClusterLabelsBundleSyncer) bundleHandler(ctx context.Contex
 	}
 }
 
-func (syncer *managedClusterLabelsBundleSyncer) setLatestBundle(newBundle *spec.ManagedClusterLabelsSpecBundle) {
+func (syncer *managedClusterLabelsBundleSyncer) setLatestBundle(newBundle *specbundle.ManagedClusterLabelsSpecBundle) {
 	syncer.latestBundleLock.Lock()
 	defer syncer.latestBundleLock.Unlock()
 
@@ -140,7 +140,7 @@ func (syncer *managedClusterLabelsBundleSyncer) handleBundle() {
 	syncer.bundleProcessingWaitingGroup.Wait()
 }
 
-func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labelsSpec *spec.ManagedClusterLabelsSpec,
+func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labelsSpec *specbundle.ManagedClusterLabelsSpec,
 	lastProcessedTimestampPtr *time.Time,
 ) {
 	syncer.workerPool.Submit(workers.NewJob(labelsSpec, func(ctx context.Context,
@@ -149,7 +149,7 @@ func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labels
 		defer syncer.bundleProcessingWaitingGroup.Done()
 
 		syncer.log.Info("update the label bundle to ManagedCluster CR...")
-		labelsSpec, ok := obj.(*spec.ManagedClusterLabelsSpec)
+		labelsSpec, ok := obj.(*specbundle.ManagedClusterLabelsSpec)
 		if !ok {
 			syncer.log.Error(errors.New("job obj is not a ManagedClusterLabelsSpec type"), "invald obj type")
 		}
@@ -194,7 +194,7 @@ func (syncer *managedClusterLabelsBundleSyncer) updateManagedClusterAsync(labels
 	}))
 }
 
-func (syncer *managedClusterLabelsBundleSyncer) managedClusterMarkUpdated(labelsSpec *spec.ManagedClusterLabelsSpec,
+func (syncer *managedClusterLabelsBundleSyncer) managedClusterMarkUpdated(labelsSpec *specbundle.ManagedClusterLabelsSpec,
 	lastProcessedTimestampPtr *time.Time,
 ) {
 	*lastProcessedTimestampPtr = labelsSpec.UpdateTimestamp
@@ -214,7 +214,7 @@ func (syncer *managedClusterLabelsBundleSyncer) getManagedClusterLastProcessedTi
 
 // updateManagedFieldEntry inserts/updates the hohFieldManager managed-field entry in a given managedCluster.
 func (syncer *managedClusterLabelsBundleSyncer) updateManagedFieldEntry(managedCluster *clusterv1.ManagedCluster,
-	managedClusterLabelsSpec *spec.ManagedClusterLabelsSpec,
+	managedClusterLabelsSpec *specbundle.ManagedClusterLabelsSpec,
 ) error {
 	// create label fields
 	labelFields := helper.LabelsField{Labels: map[string]struct{}{}}

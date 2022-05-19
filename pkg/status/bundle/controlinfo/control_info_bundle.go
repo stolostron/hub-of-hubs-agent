@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
-	statusbundle "github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
 )
 
 // NewBundle creates a new instance of Bundle.

@@ -11,8 +11,8 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle/controlinfo"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -33,7 +33,7 @@ type LeafHubControlInfoController struct {
 func AddControlInfoController(mgr ctrl.Manager, transport producer.Producer, leafHubName string, incarnation uint64,
 	_ *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
 ) error {
-	transportBundleKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.ControlInfoMsgKey)
+	transportBundleKey := fmt.Sprintf("%s.%s", leafHubName, constants.ControlInfoMsgKey)
 
 	controlInfoCtrl := &LeafHubControlInfoController{
 		log:                     ctrl.Log.WithName(controlInfoLogName),
@@ -92,7 +92,7 @@ func (c *LeafHubControlInfoController) syncBundle() {
 
 	payloadBytes, err := json.Marshal(c.bundle)
 	if err != nil {
-		c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", datatypes.StatusBundle, c.transportBundleKey, err), "failed to sync bundle")
+		c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", constants.StatusBundle, c.transportBundleKey, err), "failed to sync bundle")
 	}
 
 	transportMessageKey := c.transportBundleKey
@@ -103,7 +103,7 @@ func (c *LeafHubControlInfoController) syncBundle() {
 	c.transport.SendAsync(&producer.Message{
 		Key:     transportMessageKey,
 		ID:      c.transportBundleKey,
-		MsgType: datatypes.StatusBundle,
+		MsgType: constants.StatusBundle,
 		Version: c.bundle.GetBundleVersion().String(),
 		Payload: payloadBytes,
 	})

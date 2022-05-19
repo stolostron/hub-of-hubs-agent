@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	policiesV1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle/grc"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
+	policiesV1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -25,7 +25,7 @@ const (
 
 // AddPoliciesStatusController adds policies status controller to the manager.
 func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, env helper.ConfigManager,
-	incarnation uint64, hubOfHubsConfig *configV1.Config, syncIntervalsData *syncintervals.SyncIntervals,
+	incarnation uint64, hubOfHubsConfig *configv1.Config, syncIntervalsData *syncintervals.SyncIntervals,
 ) error {
 	bundleCollection, err := createBundleCollection(producer, env, incarnation, hubOfHubsConfig)
 	if err != nil {
@@ -37,7 +37,7 @@ func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, e
 	})
 
 	ownerRefAnnotationPredicate := predicate.NewPredicateFuncs(func(object client.Object) bool {
-		return helper.HasAnnotation(object, datatypes.OriginOwnerReferenceAnnotation)
+		return helper.HasAnnotation(object, constants.OriginOwnerReferenceAnnotation)
 	})
 
 	createObjFunction := func() bundle.Object { return &policiesV1.Policy{} }
@@ -52,21 +52,21 @@ func AddPoliciesStatusController(mgr ctrl.Manager, producer producer.Producer, e
 }
 
 func createBundleCollection(pro producer.Producer, env helper.ConfigManager, incarnation uint64,
-	hubOfHubsConfig *configV1.Config,
+	hubOfHubsConfig *configv1.Config,
 ) ([]*generic.BundleCollectionEntry, error) {
 	deltaSentCountSwitchFactor := env.StatusDeltaCountSwitchFactor
 	leafHubName := env.LeafHubName
 
 	// clusters per policy (base bundle)
-	clustersPerPolicyTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.ClustersPerPolicyMsgKey)
+	clustersPerPolicyTransportKey := fmt.Sprintf("%s.%s", leafHubName, constants.ClustersPerPolicyMsgKey)
 	clustersPerPolicyBundle := grc.NewClustersPerPolicyBundle(leafHubName, incarnation, extractPolicyID)
 
 	// minimal compliance status bundle
-	minimalComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.MinimalPolicyComplianceMsgKey)
+	minimalComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, constants.MinimalPolicyComplianceMsgKey)
 	minimalComplianceStatusBundle := grc.NewMinimalComplianceStatusBundle(leafHubName, incarnation)
 
-	fullStatusPredicate := func() bool { return hubOfHubsConfig.Spec.AggregationLevel == configV1.Full }
-	minimalStatusPredicate := func() bool { return hubOfHubsConfig.Spec.AggregationLevel == configV1.Minimal }
+	fullStatusPredicate := func() bool { return hubOfHubsConfig.Spec.AggregationLevel == configv1.Full }
+	minimalStatusPredicate := func() bool { return hubOfHubsConfig.Spec.AggregationLevel == configv1.Minimal }
 
 	// apply a hybrid sync manager on the (full aggregation) compliance bundles
 	completeComplianceStatusBundleCollectionEntry, deltaComplianceStatusBundleCollectionEntry,
@@ -94,12 +94,12 @@ func getHybridComplianceBundleCollectionEntries(transport producer.Producer, lea
 	deltaCountSwitchFactor int,
 ) (*generic.BundleCollectionEntry, *generic.BundleCollectionEntry, error) {
 	// complete compliance status bundle
-	completeComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.PolicyCompleteComplianceMsgKey)
+	completeComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, constants.PolicyCompleteComplianceMsgKey)
 	completeComplianceStatusBundle := grc.NewCompleteComplianceStatusBundle(leafHubName, clustersPerPolicyBundle,
 		incarnation, extractPolicyID)
 
 	// delta compliance status bundle
-	deltaComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.PolicyDeltaComplianceMsgKey)
+	deltaComplianceStatusTransportKey := fmt.Sprintf("%s.%s", leafHubName, constants.PolicyDeltaComplianceMsgKey)
 	deltaComplianceStatusBundle := grc.NewDeltaComplianceStatusBundle(leafHubName, completeComplianceStatusBundle,
 		clustersPerPolicyBundle.(*grc.ClustersPerPolicyBundle), incarnation, extractPolicyID)
 
@@ -118,6 +118,6 @@ func getHybridComplianceBundleCollectionEntries(transport producer.Producer, lea
 }
 
 func extractPolicyID(obj bundle.Object) (string, bool) {
-	val, ok := obj.GetAnnotations()[datatypes.OriginOwnerReferenceAnnotation]
+	val, ok := obj.GetAnnotations()[constants.OriginOwnerReferenceAnnotation]
 	return val, ok
 }

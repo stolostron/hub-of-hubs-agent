@@ -3,15 +3,15 @@ package managedclusters
 import (
 	"fmt"
 
-	// clusterV1 "open-cluster-management.io/api/cluster/v1"
-	clusterV1 "github.com/open-cluster-management/api/cluster/v1"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
+	// clusterV1 "open-cluster-management.io/api/cluster/v1"
+	clusterV1 "open-cluster-management.io/api/cluster/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -23,10 +23,10 @@ const (
 // mgr, pro, env.LeafHubID, incarnation, config, syncIntervals
 // AddClustersStatusController adds managed clusters status controller to the manager.
 func AddClustersStatusController(mgr ctrl.Manager, producer producer.Producer, leafHubName string,
-	incarnation uint64, hubOfHubsConfig *configV1.Config, syncIntervals *syncintervals.SyncIntervals,
+	incarnation uint64, hubOfHubsConfig *configv1.Config, syncIntervals *syncintervals.SyncIntervals,
 ) error {
 	createObjFunction := func() bundle.Object { return &clusterV1.ManagedCluster{} }
-	transportBundleKey := fmt.Sprintf("%s.%s", leafHubName, datatypes.ManagedClustersMsgKey)
+	transportBundleKey := fmt.Sprintf("%s.%s", leafHubName, constants.ManagedClustersMsgKey)
 
 	// update bundle object
 	manipulateObjFunc := func(object bundle.Object) {
@@ -36,8 +36,8 @@ func AddClustersStatusController(mgr ctrl.Manager, producer producer.Producer, l
 	}
 
 	predicateFunc := func() bool { // bundle predicate
-		return hubOfHubsConfig.Spec.AggregationLevel == configV1.Full ||
-			hubOfHubsConfig.Spec.AggregationLevel == configV1.Minimal
+		return hubOfHubsConfig.Spec.AggregationLevel == configv1.Full ||
+			hubOfHubsConfig.Spec.AggregationLevel == configv1.Minimal
 		// at this point send all managed clusters even if aggregation level is minimal
 	}
 
