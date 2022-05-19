@@ -7,8 +7,8 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/generic"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	configv1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	appsv1alpha1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -24,7 +24,7 @@ func AddSubscriptionStatusesController(mgr ctrl.Manager, transport producer.Prod
 	createObjFunction := func() bundle.Object { return &appsv1alpha1.SubscriptionStatus{} }
 
 	bundleCollection := []*generic.BundleCollectionEntry{
-		generic.NewBundleCollectionEntry(fmt.Sprintf("%s.%s", leafHubName, datatypes.SubscriptionStatusMsgKey),
+		generic.NewBundleCollectionEntry(fmt.Sprintf("%s.%s", leafHubName, constants.SubscriptionStatusMsgKey),
 			bundle.NewGenericStatusBundle(leafHubName, incarnation, nil),
 			func() bool { return true }),
 	} // bundle predicate - always send subscription status.

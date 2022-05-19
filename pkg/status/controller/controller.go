@@ -17,13 +17,13 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/policies"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // AddControllers adds all the controllers to the Manager.
 func AddControllers(mgr ctrl.Manager, pro producer.Producer, configManager helper.ConfigManager, incarnation uint64) error {
-	config := &configV1.Config{}
+	config := &configv1.Config{}
 	if err := configCtrl.AddConfigController(mgr, config); err != nil {
 		return fmt.Errorf("failed to add ConfigMap controller: %w", err)
 	}
@@ -37,7 +37,7 @@ func AddControllers(mgr ctrl.Manager, pro producer.Producer, configManager helpe
 		return fmt.Errorf("failed to add PoliciesStatusController controller: %w", err)
 	}
 
-	addControllerFunctions := []func(ctrl.Manager, producer.Producer, string, uint64, *configV1.Config, *syncintervals.SyncIntervals) error{
+	addControllerFunctions := []func(ctrl.Manager, producer.Producer, string, uint64, *configv1.Config, *syncintervals.SyncIntervals) error{
 		managedclusters.AddClustersStatusController,
 		placement.AddPlacementRulesController,
 		placement.AddPlacementsController,

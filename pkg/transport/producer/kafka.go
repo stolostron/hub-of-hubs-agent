@@ -10,7 +10,7 @@ import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-kafka-transport/headers"
 	kafkaproducer "github.com/stolostron/hub-of-hubs-kafka-transport/kafka-client/kafka-producer"
-	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/compressor"
 )
 
 const (
@@ -24,7 +24,7 @@ type KafkaProducer struct {
 	kafkaProducer        *kafkaproducer.KafkaProducer
 	eventSubscriptionMap map[string]map[EventType]EventCallback
 	topic                string
-	compressor           compressors.Compressor
+	compressor           compressor.Compressor
 	deliveryChan         chan kafka.Event
 	stopChan             chan struct{}
 	startOnce            sync.Once
@@ -32,7 +32,7 @@ type KafkaProducer struct {
 }
 
 // NewProducer returns a new instance of Producer object.
-func NewKafkaProducer(compressor compressors.Compressor, log logr.Logger, environmentManager *helper.ConfigManager) (*KafkaProducer, error) {
+func NewKafkaProducer(compressor compressor.Compressor, log logr.Logger, environmentManager *helper.ConfigManager) (*KafkaProducer, error) {
 	configMap, err := environmentManager.GetProducerKafkaConfigMap()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get kafka configMap")

@@ -8,7 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/open-horizon/edge-sync-service-client/client"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
-	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/compressor"
 )
 
 const (
@@ -23,7 +23,7 @@ type SyncServiceProducer struct {
 	log                  logr.Logger
 	client               *client.SyncServiceClient
 	eventSubscriptionMap map[string]map[EventType]EventCallback
-	compressor           compressors.Compressor
+	compressor           compressor.Compressor
 	msgChan              chan *Message
 	stopChan             chan struct{}
 	startOnce            sync.Once
@@ -31,7 +31,7 @@ type SyncServiceProducer struct {
 }
 
 // NewSyncService creates a new instance of SyncService.
-func NewSyncServiceProducer(compressor compressors.Compressor, log logr.Logger, env *helper.ConfigManager) (*SyncServiceProducer, error) {
+func NewSyncServiceProducer(compressor compressor.Compressor, log logr.Logger, env *helper.ConfigManager) (*SyncServiceProducer, error) {
 	syncServiceClient := client.NewSyncServiceClient(env.SyncService.Protocol, env.SyncService.ProducerHost, uint16(env.SyncService.ProducerPort))
 	syncServiceClient.SetAppKeyAndSecret("user@myorg", "")
 

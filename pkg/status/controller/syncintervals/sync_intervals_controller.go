@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -36,7 +36,7 @@ func AddSyncIntervalsController(mgr ctrl.Manager, syncIntervals *SyncIntervals) 
 	}
 
 	syncIntervalsPredicate := predicate.NewPredicateFuncs(func(object client.Object) bool {
-		return object.GetNamespace() == datatypes.HohSystemNamespace && object.GetName() == STATUS_SYNC_INTERVAL_CONFIGMAP_NAME
+		return object.GetNamespace() == constants.HohSystemNamespace && object.GetName() == STATUS_SYNC_INTERVAL_CONFIGMAP_NAME
 	})
 
 	if err := ctrl.NewControllerManagedBy(mgr).

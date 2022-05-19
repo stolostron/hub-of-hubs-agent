@@ -2,7 +2,7 @@ package generic
 
 import (
 	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
-	"github.com/stolostron/hub-of-hubs-data-types/bundle/status"
+	statusbundle "github.com/stolostron/hub-of-hubs-manager/pkg/bundle/status"
 )
 
 // NewBundleCollectionEntry creates a new instance of BundleCollectionEntry.
@@ -22,5 +22,5 @@ type BundleCollectionEntry struct {
 	transportBundleKey    string
 	bundle                bundle.Bundle
 	predicate             func() bool
-	lastSentBundleVersion status.BundleVersion // not pointer so it does not point to the bundle's internal version
+	lastSentBundleVersion statusbundle.BundleVersion // not pointer so it does not point to the bundle's internal version
 }

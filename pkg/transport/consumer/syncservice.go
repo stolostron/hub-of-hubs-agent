@@ -13,9 +13,8 @@ import (
 	"github.com/open-horizon/edge-sync-service-client/client"
 	helper "github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	bundle "github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
-	compressor "github.com/stolostron/hub-of-hubs-message-compression"
-	"github.com/stolostron/hub-of-hubs-message-compression/compressors"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/compressor"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 )
 
 const (
@@ -26,7 +25,7 @@ const (
 type SyncService struct {
 	log                             logr.Logger
 	client                          *client.SyncServiceClient
-	compressorsMap                  map[compressor.CompressionType]compressors.Compressor
+	compressorsMap                  map[compressor.CompressionType]compressor.Compressor
 	pollingInterval                 int
 	bundlesMetaDataChan             chan *client.ObjectMetaData
 	genericBundlesChan              chan *bundle.GenericBundle
@@ -52,7 +51,7 @@ func NewSyncService(log logr.Logger, environmentManager *helper.ConfigManager, g
 	return &SyncService{
 		log:                             log,
 		client:                          syncServiceClient,
-		compressorsMap:                  make(map[compressor.CompressionType]compressors.Compressor),
+		compressorsMap:                  make(map[compressor.CompressionType]compressor.Compressor),
 		pollingInterval:                 syncServiceConfig.ConsumerPollingInterval,
 		bundlesMetaDataChan:             make(chan *client.ObjectMetaData),
 		genericBundlesChan:              genericBundlesUpdatesChan,
@@ -86,7 +85,7 @@ func (s *SyncService) Register(msgID string, customBundleRegistration *bundle.Cu
 
 func (s *SyncService) handleBundles(ctx context.Context) {
 	// register for updates for spec bundles and config objects, includes all types of spec bundles.
-	s.client.StartPollingForUpdates(datatypes.SpecBundle, s.pollingInterval, s.bundlesMetaDataChan)
+	s.client.StartPollingForUpdates(constants.SpecBundle, s.pollingInterval, s.bundlesMetaDataChan)
 
 	for {
 		select {

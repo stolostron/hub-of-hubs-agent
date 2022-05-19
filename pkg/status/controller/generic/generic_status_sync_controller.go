@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	datatypes "github.com/stolostron/hub-of-hubs-data-types"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
+	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
+	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/constants"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/stolostron/hub-of-hubs-agent/pkg/status/bundle"
-	"github.com/stolostron/hub-of-hubs-agent/pkg/status/controller/syncintervals"
-	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
 )
 
 const REQUEUE_PERIOD = 5 * time.Second
@@ -215,7 +214,7 @@ func (c *genericStatusSyncController) syncBundles() {
 
 			payloadBytes, err := json.Marshal(entry.bundle)
 			if err != nil {
-				c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", datatypes.StatusBundle, entry.transportBundleKey, err), "failed to sync bundle")
+				c.log.Error(fmt.Errorf("sync object from type %s with id %s - %w", constants.StatusBundle, entry.transportBundleKey, err), "failed to sync bundle")
 			}
 
 			transportMessageKey := entry.transportBundleKey
@@ -226,7 +225,7 @@ func (c *genericStatusSyncController) syncBundles() {
 			c.transport.SendAsync(&producer.Message{
 				Key:     transportMessageKey,
 				ID:      entry.transportBundleKey,
-				MsgType: datatypes.StatusBundle,
+				MsgType: constants.StatusBundle,
 				Version: entry.bundle.GetBundleVersion().String(),
 				Payload: payloadBytes,
 			})

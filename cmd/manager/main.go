@@ -8,8 +8,6 @@ import (
 	"strconv"
 
 	"github.com/go-logr/logr"
-	clustersV1 "github.com/open-cluster-management/api/cluster/v1"
-	policiesV1 "github.com/open-cluster-management/governance-policy-propagator/api/v1"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/helper"
 	"github.com/stolostron/hub-of-hubs-agent/pkg/spec/bundle"
@@ -17,14 +15,16 @@ import (
 	statusController "github.com/stolostron/hub-of-hubs-agent/pkg/status/controller"
 	consumer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/consumer"
 	producer "github.com/stolostron/hub-of-hubs-agent/pkg/transport/producer"
-	configV1 "github.com/stolostron/hub-of-hubs-data-types/apis/config/v1"
-	compressor "github.com/stolostron/hub-of-hubs-message-compression"
+	configv1 "github.com/stolostron/hub-of-hubs-manager/pkg/apis/config/v1"
+	"github.com/stolostron/hub-of-hubs-manager/pkg/compressor"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiRuntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	clustersV1 "open-cluster-management.io/api/cluster/v1"
 	clustersV1beta1 "open-cluster-management.io/api/cluster/v1beta1"
+	policiesV1 "open-cluster-management.io/governance-policy-propagator/api/v1"
 	placementRulesV1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/placementrule/v1"
 	appsV1alpha1 "open-cluster-management.io/multicloud-operators-subscription/pkg/apis/apps/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -195,7 +195,7 @@ func addToScheme(runtimeScheme *apiRuntime.Scheme) error {
 	}
 
 	schemeBuilders := []*scheme.Builder{
-		policiesV1.SchemeBuilder, configV1.SchemeBuilder, placementRulesV1.SchemeBuilder, appsV1alpha1.SchemeBuilder,
+		policiesV1.SchemeBuilder, configv1.SchemeBuilder, placementRulesV1.SchemeBuilder, appsV1alpha1.SchemeBuilder,
 	} // add schemes
 
 	for _, schemeBuilder := range schemeBuilders {
