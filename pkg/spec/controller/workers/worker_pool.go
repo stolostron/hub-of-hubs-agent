@@ -26,10 +26,7 @@ type WorkerPool struct {
 
 // AddK8sWorkerPool adds k8s workers pool to the manager and returns it.
 func AddWorkerPool(log logr.Logger, workpoolSize int, manager ctrl.Manager) (*WorkerPool, error) {
-	config, err := rest.InClusterConfig() // creates the in-cluster config
-	if err != nil {
-		return nil, fmt.Errorf("failed to get in cluster kubeconfig - %w", err)
-	}
+	config := manager.GetConfig()
 
 	// for impersonation workers we have additional workers, one per impersonated user.
 	workerPool := &WorkerPool{
