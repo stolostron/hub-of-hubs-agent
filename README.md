@@ -2,6 +2,7 @@
 
 # Hub-of-Hubs-Agent
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/stolostron/hub-of-hubs-agent)](https://goreportcard.com/report/github.com/stolostron/hub-of-hubs-agent)
 [![Go Reference](https://pkg.go.dev/badge/github.com/stolostron/hub-of-hubs-agent.svg)](https://pkg.go.dev/github.com/stolostron/hub-of-hubs-agent)
 [![License](https://img.shields.io/github/license/stolostron/hub-of-hubs-agent)](/LICENSE)
 
