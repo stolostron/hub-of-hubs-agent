@@ -6,7 +6,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/stolostron/hub-of-hubs-agent.svg)](https://pkg.go.dev/github.com/stolostron/hub-of-hubs-agent)
 [![License](https://img.shields.io/github/license/stolostron/hub-of-hubs-agent)](/LICENSE)
 
-The manager component of [Hub-of-Hubs](https://github.com/stolostron/hub-of-hubs).
+The agent component of [Hub-of-Hubs](https://github.com/stolostron/hub-of-hubs).
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
